@@ -1,0 +1,68 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import FAQ from '~/components/FAQ.astro';
+import { PRINCIPLES, STEPS } from '~/data/engagement';
+import { faqPage, abs } from '~/lib/schema';
+
+const title = 'How We Work: Audit, Build, Run | FalcoDash';
+const description = 'How a FalcoDash AI automation engagement works: a free audit, a paid strategy session, a fixed-scope build and an optional managed automation retainer.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'How we work', path: '/how-we-work' }];
+const faqs = [
+  { q: 'How much does AI automation cost?', a: 'It depends on the number of processes, systems and users involved. Every project starts with a free audit, and you get a fixed scope and quote before any build begins.' },
+  { q: 'What happens in the free automation audit?', a: 'A working session on how your team runs today. We map the repetitive work, estimate the hours it costs and give you a written shortlist of what to automate first.' },
+  { q: 'Do I have to use FalcoDash for the build?', a: 'No. The strategy session produces a plan you can take to any vendor, or to your own team.' },
+  { q: 'What does a build include?', a: 'Design, build and testing against your real data, documentation, a runbook and a handover session to train your team.' },
+  { q: 'What does the managed automation retainer cover?', a: 'Monitoring, fixes, small changes, usage reports and a monthly review of what to automate next.' },
+];
+const schema = [
+  faqPage(faqs, '/how-we-work'),
+  {
+    '@type': 'HowTo',
+    name: 'How to start an AI automation project with FalcoDash',
+    description,
+    step: STEPS.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.h, text: s.p, url: `${abs('/how-we-work')}#step-${i + 1}` })),
+  },
+];
+---
+<Base title={title} description={description} path="/how-we-work" breadcrumbs={crumbs} schema={schema} ogImage="/og/how-we-work.png">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <div class="page-head-grid">
+      <h1 class="display-sm">Audit. Build. Run.</h1>
+      <p class="lede">Start with a free audit. Build what pays back first. Then let us run it, so it keeps working after launch.</p>
+    </div>
+  </section>
+  <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer heading="How does a FalcoDash project work?" text="Every FalcoDash project starts with a free automation audit that produces a written shortlist. A paid strategy session scopes the first build with a fixed quote. We build and test it on your real data, hand it over with documentation, and can run it for you on a monthly retainer." /></div></section>
+
+  <section class="wrap section-tight" aria-labelledby="stages-h">
+    <h2 id="stages-h" class="sr-only">The four stages</h2>
+    {STEPS.map((s, i) => (
+      <div class="row" id={`step-${i + 1}`}>
+        <div class="stack" style="--gap:10px"><span class="label">{s.k}</span><h3>{s.h}</h3></div>
+        <p class="body" style="font-size:18px;line-height:1.6;max-width:680px">{s.p}</p>
+      </div>
+    ))}
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="own-h">
+    <div class="sec-head"><h2 id="own-h" class="h2">Built to be owned</h2></div>
+    <div class="grid-cells principles">{PRINCIPLES.map((p) => <div><h3>{p.h}</h3><p>{p.p}</p></div>)}</div>
+  </section>
+
+  <section class="wrap section-tight split" aria-labelledby="price-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="price-h" class="h2">What sets the price</h2></div>
+    <div class="prose" style="border-top:2px solid var(--white);padding-top:16px">
+      <p>Three things: the number of steps in the process, the number of systems it connects, and how much judgment the AI has to apply. Clean data and modern tools with APIs keep costs down. Spreadsheets, PDFs and older software push them up.</p>
+      <p>A project has a one-time build cost and an ongoing cost to run it: software subscriptions, AI model usage and maintenance. We give you both numbers up front. <a href="/blog/ai-automation-cost-small-business">Read the full guide to AI automation cost</a>.</p>
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions</h2></div>
+    <FAQ faqs={faqs} />
+  </section>
+  <CtaBand />
+</Base>

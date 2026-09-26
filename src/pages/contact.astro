@@ -1,0 +1,35 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ContactForm from '~/components/ContactForm.astro';
+import { SITE } from '~/data/site';
+
+const title = 'Get a Free AI Automation Audit | FalcoDash';
+const description = "Request a free automation audit. Tell us what's slowing your team down and FalcoDash will show you what to automate first. Call (909) 499-6997.";
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }];
+---
+<Base title={title} description={description} path="/contact" breadcrumbs={crumbs} ogImage="/og/contact.png" pageType="ContactPage">
+  <section class="wrap page-head" style="padding-bottom:var(--section-y)">
+    <Breadcrumbs items={crumbs} />
+    <div class="split" style="gap:56px">
+      <div class="stack">
+        <p class="eyebrow">Free automation audit</p>
+        <h1 class="display-sm" style="font-size:clamp(44px,6vw,88px);line-height:.95">{SITE.tagline}</h1>
+        <p class="lede" data-answer>Tell us what's slowing your team down. We'll set up a free audit and show you what to automate first. You leave with a written shortlist, whether or not you work with us.</p>
+        <div class="stack" style="--gap:6px;font-size:17px">
+          <a href={`tel:${SITE.phone}`} style="color:var(--white);text-decoration:none">{SITE.phoneDisplay}</a>
+          <a href={`mailto:${SITE.email}`} style="color:var(--white);text-decoration:none">{SITE.email}</a>
+          <span class="muted" style="font-size:15px">{SITE.locationLine}</span>
+        </div>
+        <ol class="ticks ticks-col" style="margin-top:16px">
+          <li><strong>You tell us</strong> how the work runs today.</li>
+          <li><strong>We reply</strong> within one business day to schedule the audit.</li>
+          <li><strong>You get</strong> a written shortlist of what to automate first.</li>
+        </ol>
+      </div>
+      <div>
+        <ContactForm source="contact" />
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,123 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Cover from '~/components/Cover.astro';
+import Mark from '~/components/Mark.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { getPosts, related, slugify, md, plain, modified, formatDate, categorySlug, wordCount, type Post } from '~/lib/blog';
+import { faqPage, ORG_ID, abs } from '~/lib/schema';
+import { SITE } from '~/data/site';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post, all: posts } }));
+}
+const { post, all } = Astro.props as { post: Post; all: Post[] };
+const d = post.data;
+const path = `/blog/${post.id}`;
+const base = d.seo_title || d.title;
+// Keep titles inside ~60 characters so they aren't truncated in results.
+const title = base.length <= 50 ? `${base} | FalcoDash` : base;
+const faqs = (d.faqs ?? []).map((f) => ({ q: f.question, a: f.answer }));
+const used = new Set<string>();
+const sections = d.sections.map((s) => {
+  let id = slugify(s.heading) || 'section';
+  while (used.has(id)) id += '-2';
+  used.add(id);
+  return { ...s, id, html: md(s.body) };
+});
+const toc = [...sections.map((s) => ({ id: s.id, h: s.heading })), ...(faqs.length ? [{ id: 'questions', h: 'Questions' }] : [])];
+const catPath = `/blog/category/${categorySlug(d.category)}`;
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: d.category, path: catPath }, { name: d.title, path }];
+const mod = modified(post);
+const ogImage = d.cover ? d.cover : `/og/blog/${post.id}.png`;
+const schema = [
+  {
+    '@type': 'BlogPosting',
+    '@id': `${abs(path)}#article`,
+    headline: d.title,
+    description: d.description,
+    abstract: d.short_answer,
+    image: abs(ogImage),
+    datePublished: d.date.toISOString(),
+    dateModified: mod.toISOString(),
+    articleSection: d.category,
+    wordCount: wordCount(post),
+    inLanguage: 'en-US',
+    mainEntityOfPage: { '@id': `${abs(path)}#webpage` },
+    author: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
+    articleBody: plain([d.short_answer, ...d.sections.map((s) => `${s.heading}. ${s.body}`)].join(' ')),
+  },
+  ...(faqs.length ? [faqPage(faqs, path)] : []),
+];
+const rel = related(post, all);
+---
+<Base title={title} description={d.description} path={path} breadcrumbs={crumbs} schema={schema} ogImage={ogImage} ogImageAlt={d.cover_alt || d.title} ogType="article" article={{ published: d.date, modified: mod, section: d.category }} dateModified={mod.toISOString()}>
+  <article class="wrap" style="padding-top:clamp(40px,6vw,72px)">
+    <Breadcrumbs items={[{ name: 'Blog', path: '/blog' }, { name: d.category, path: catPath }, { name: d.title, path }]} />
+    <h1 class="display-sm" style="max-width:1040px">{d.title}</h1>
+    <div class="post-meta">
+      <span>By <strong>{SITE.name}</strong></span>
+      <span>Published <time datetime={d.date.toISOString()}>{formatDate(d.date)}</time></span>
+      {d.updated && <span>Updated <time datetime={d.updated.toISOString()}>{formatDate(d.updated)}</time></span>}
+      <span>{d.read_time} read</span>
+      <a href={catPath} style="text-decoration:none">{d.category}</a>
+    </div>
+    <div style="margin-top:32px"><Cover src={d.cover} alt={d.cover_alt} ratio="21-9" eager /></div>
+
+    <div class="post-grid">
+      <div class="post-main">
+        <section class="answer-box" aria-labelledby="short-answer">
+          <h2 id="short-answer">Short answer</h2>
+          <p data-answer>{d.short_answer}</p>
+        </section>
+        <div class="prose">
+          {sections.map((s) => (
+            <section id={s.id} aria-labelledby={`${s.id}-h`}>
+              <h2 id={`${s.id}-h`}>{s.heading}</h2>
+              <Fragment set:html={s.html} />
+            </section>
+          ))}
+        </div>
+        {faqs.length > 0 && (
+          <section id="questions" class="faq" style="margin-top:56px;border-top:2px solid var(--white)" aria-labelledby="questions-h">
+            <h2 id="questions-h" style="margin:16px 0 8px;font-size:clamp(26px,2.6vw,34px);letter-spacing:-.015em">Questions</h2>
+            {faqs.map((f) => (
+              <details open>
+                <summary><h3 style="font:inherit;margin:0">{f.q}</h3></summary>
+                <p class="answer">{f.a}</p>
+              </details>
+            ))}
+          </section>
+        )}
+        <div class="author-box">
+          <Mark size={44} fill="var(--ice)" />
+          <div class="stack" style="--gap:4px"><strong style="font-size:17px">FalcoDash</strong><span class="body" style="font-size:15px">We design, build and run AI workflows, automations, dashboards and custom apps. <a href="/about">About us</a>.</span></div>
+        </div>
+      </div>
+
+      <aside class="post-aside">
+        {toc.length > 0 && (
+          <nav class="toc" aria-label="On this page">
+            <div class="label" style="margin-bottom:12px;letter-spacing:.08em">On this page</div>
+            <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.h}</a></li>)}</ol>
+          </nav>
+        )}
+        <div class="aside-cta">
+          <strong>Free automation audit</strong>
+          <span>Find out what to automate first. You get a written shortlist.</span>
+          <a href="/contact" class="btn btn-dark"><span>Request an audit</span><span aria-hidden="true">→</span></a>
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  <section class="wrap section" aria-labelledby="keep-h">
+    <div class="sec-head" style="margin-bottom:32px"><h2 id="keep-h" class="h2" style="font-size:clamp(32px,4vw,56px)">Keep reading</h2><a href="/blog" class="meta">All posts →</a></div>
+    <div class="grid-auto">
+      {rel.map((r) => <a href={`/blog/${r.id}`} class="post-link"><span class="label">{r.data.category} · {r.data.read_time}</span><h3 style="font-size:24px">{r.data.title}</h3></a>)}
+    </div>
+  </section>
+  <CtaBand />
+</Base>

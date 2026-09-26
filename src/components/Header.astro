@@ -1,0 +1,34 @@
+---
+import Mark from './Mark.astro';
+import { NAV, SITE } from '~/data/site';
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
+---
+<header class="site-header" data-open="false">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="wrap site-nav" aria-label="Main">
+    <a href="/" class="brand" aria-label={`${SITE.name} home`}>
+      <Mark fill="var(--ice)" />
+      <span class="wordmark">FalcoDash</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <ul class="nav-links" id="nav-links">
+      {NAV.map((n) => <li><a href={n.href} aria-current={current(n.href)}>{n.label}</a></li>)}
+      <li class="mobile-cta"><a href="/contact">Get a free automation audit →</a></li>
+    </ul>
+    <a href="/contact" class="btn btn-primary btn-sm nav-cta">Free audit <span aria-hidden="true">→</span></a>
+  </nav>
+</header>
+<script>
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const toggle = header?.querySelector<HTMLButtonElement>('.nav-toggle');
+  toggle?.addEventListener('click', () => {
+    const open = header!.dataset.open !== 'true';
+    header!.dataset.open = String(open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? 'Close' : 'Menu';
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && header?.dataset.open === 'true') toggle?.click();
+  });
+</script>

@@ -1,0 +1,41 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FAQ from '~/components/FAQ.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { CORE_FAQS, MORE_FAQS } from '~/data/faqs';
+import { SERVICES } from '~/data/services';
+import { INDUSTRIES } from '~/data/industries';
+import { faqPage } from '~/lib/schema';
+
+const title = 'AI Automation FAQ | FalcoDash';
+const description = 'Answers to common questions about AI automation, AI workflows, custom AI assistants, dashboards, cost, timelines and data security from FalcoDash.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'FAQ', path: '/faq' }];
+const general = [...CORE_FAQS, ...MORE_FAQS];
+const groups = [
+  ...SERVICES.map((s) => ({ name: s.name, href: `/services/${s.slug}`, faqs: s.faqs })),
+  ...INDUSTRIES.map((i) => ({ name: i.name, href: `/industries/${i.slug}`, faqs: i.faqs })),
+];
+// Only the general questions go in this page's FAQPage schema; the others are marked up on their own pages.
+const schema = [faqPage(general, '/faq')];
+---
+<Base title={title} description={description} path="/faq" breadcrumbs={crumbs} schema={schema} ogImage="/og/faq.png" pageType="FAQPage">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <div class="page-head-grid">
+      <h1 class="display-sm">Questions, answered.</h1>
+      <p class="lede">Straight answers about AI automation, what it costs and how we work. Don't see yours? <a href="/contact">Ask us</a>.</p>
+    </div>
+  </section>
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="gen-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="gen-h" class="h2">General</h2></div>
+    <FAQ faqs={general} />
+  </section>
+  {groups.map((g) => (
+    <section class="wrap section-tight split" style="--min:380px">
+      <div class="stack" style="border-top:2px solid var(--white);padding-top:16px;--gap:12px"><h2 class="h3" style="font-size:clamp(26px,3vw,40px)">{g.name}</h2><a href={g.href} class="link-arrow">Learn more →</a></div>
+      <FAQ faqs={g.faqs} openFirst={false} />
+    </section>
+  ))}
+  <CtaBand />
+</Base>

@@ -1,0 +1,18 @@
+---
+import Shot from './Shot.astro';
+import type { Work } from '~/data/work';
+interface Props { work: Work; headingTag?: 'h2' | 'h3' }
+const { work: w, headingTag: H = 'h3' } = Astro.props;
+---
+<article class="card">
+  <a href={`/work/${w.slug}`} aria-label={`${w.name} case study`} tabindex="-1"><Shot name={w.shot} alt={w.shotAlt} label={w.shotLabel} /></a>
+  <div class="card-body">
+    <div class="card-meta"><span>{w.tags}</span><span>{w.num}</span></div>
+    <H class="card-title"><a href={`/work/${w.slug}`} style="color:inherit;text-decoration:none">{w.name}</a></H>
+    <p class="body">{w.summary}</p>
+    <div class="card-foot" style="gap:16px;flex-wrap:wrap">
+      <a href={`/work/${w.slug}`} class="link-arrow">Case study →</a>
+      <a href={w.url} class="link-arrow" style="color:var(--white)" rel="noopener">{w.host} <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,13 @@
+---
+import type { FAQ } from '~/data/services';
+interface Props { faqs: FAQ[]; openFirst?: boolean; allOpen?: boolean; headingLevel?: 'h2' | 'h3' }
+const { faqs, openFirst = true, allOpen = false } = Astro.props;
+---
+<div class="faq" style="border-top:2px solid var(--white)">
+  {faqs.map((f, i) => (
+    <details open={allOpen || (openFirst && i === 0)}>
+      <summary><h3 style="font:inherit;margin:0">{f.q}</h3></summary>
+      <p class="answer">{f.a}</p>
+    </details>
+  ))}
+</div>

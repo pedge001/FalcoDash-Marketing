@@ -1,0 +1,83 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import Shot from '~/components/Shot.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import FAQ from '~/components/FAQ.astro';
+import WorkCard from '~/components/WorkCard.astro';
+import { WORK, type Work } from '~/data/work';
+import { serviceBySlug } from '~/data/services';
+import { industryBySlug } from '~/data/industries';
+import { faqPage, ORG_ID, abs } from '~/lib/schema';
+
+export function getStaticPaths() {
+  return WORK.map((w) => ({ params: { slug: w.slug }, props: { w } }));
+}
+const { w } = Astro.props as { w: Work };
+const path = `/work/${w.slug}`;
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Work', path: '/work' }, { name: w.name, path }];
+const services = w.services.map(serviceBySlug).filter((x) => !!x);
+const industries = w.industries.map(industryBySlug).filter((x) => !!x);
+const others = WORK.filter((x) => x.slug !== w.slug).slice(0, 2);
+const schema = [
+  {
+    '@type': 'SoftwareApplication',
+    '@id': `${abs(path)}#software`,
+    name: w.name,
+    url: w.url,
+    description: w.shortAnswer,
+    applicationCategory: w.appCategory,
+    operatingSystem: w.platform,
+    creator: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
+  },
+  faqPage(w.faqs, path),
+];
+---
+<Base title={w.seoTitle} description={w.description} path={path} breadcrumbs={crumbs} schema={schema} ogImage={`/og/work/${w.slug}.png`}>
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <div class="card-meta" style="margin-bottom:20px"><span>{w.tags}</span><span>{w.num}</span></div>
+    <h1 class="display-sm">{w.name}</h1>
+    <p class="lede">{w.summary}</p>
+    <div class="hero-actions" style="margin-top:32px">
+      <a href={w.url} class="btn btn-primary" rel="noopener"><span>Visit {w.host}</span><span aria-hidden="true">↗</span></a>
+      <a href="/contact" class="btn btn-outline"><span>Build something similar</span><span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+  <section class="wrap section-tight">
+    <div style="border:2px solid var(--line)"><Shot name={w.shot} alt={w.shotAlt} label={w.shotLabel} eager sizes="(min-width: 1320px) 1224px, 100vw" /></div>
+  </section>
+  <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer heading={`What is ${w.name}?`} text={w.shortAnswer} /></div></section>
+
+  <section class="wrap section-tight split" aria-label="Project details">
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+      <h2 class="h3">The problem</h2>
+      <p class="body" style="font-size:18px;line-height:1.65">{w.problem}</p>
+      <h2 class="h3 mt-2">Who it's for</h2>
+      <p class="body" style="font-size:18px;line-height:1.65">{w.audience}</p>
+    </div>
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+      <h2 class="h3">What we built</h2>
+      <ul class="ticks ticks-col" style="font-size:18px">{w.built.map((b) => <li>{b}</li>)}</ul>
+      <dl class="kv mt-2">
+        <dt>Platform</dt><dd>{w.platform}</dd>
+        <dt>Services</dt><dd>{services.map((s, i) => <>{i > 0 && ', '}<a href={`/services/${s.slug}`}>{s.name}</a></>)}</dd>
+        {industries.length > 0 && <><dt>Industry</dt><dd>{industries.map((ind, i) => <>{i > 0 && ', '}<a href={`/industries/${ind.slug}`}>{ind.name}</a></>)}</dd></>}
+        <dt>Live at</dt><dd><a href={w.url} rel="noopener">{w.host}</a></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions</h2></div>
+    <FAQ faqs={w.faqs} />
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="more-h">
+    <div class="sec-head"><h2 id="more-h" class="h2">More work</h2><a href="/work" class="meta">All work →</a></div>
+    <div class="grid-auto" style="--min:480px">{others.map((o) => <WorkCard work={o} />)}</div>
+  </section>
+  <CtaBand heading="Want something like this for your team?" />
+</Base>

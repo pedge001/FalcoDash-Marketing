@@ -1,0 +1,27 @@
+---
+// Screenshot slot. Drop a file named `<name>.png|jpg|webp` into src/assets/shots/ and it replaces
+// the placeholder on the next build, resized and converted to AVIF/WebP with explicit dimensions.
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  name: string;
+  alt: string;
+  label: string;
+  ratio?: '16-10' | '16-9' | '21-9';
+  sizes?: string;
+  eager?: boolean;
+}
+const { name, alt, label, ratio = '16-10', sizes = '(min-width: 1320px) 640px, (min-width: 1100px) 50vw, 100vw', eager = false } = Astro.props;
+
+const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/shots/*.{png,jpg,jpeg,webp,avif}', { eager: true });
+const match = Object.entries(files).find(([p]) => p.replace(/^.*\/|\.[^.]+$/g, '') === name);
+const img = match?.[1].default;
+---
+<div class={`shot ar-${ratio}`}>
+  {img ? (
+    <Picture src={img} alt={alt} formats={['avif', 'webp']} widths={[480, 800, 1200, 1600].filter((w) => w <= img.width)} sizes={sizes} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} />
+  ) : (
+    <div class="shot-ph" role="img" aria-label={alt}><span>{label}</span></div>
+  )}
+</div>

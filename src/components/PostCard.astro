@@ -1,0 +1,29 @@
+---
+import Cover from './Cover.astro';
+import { formatDate, type Post } from '~/lib/blog';
+interface Props { post: Post; featured?: boolean }
+const { post, featured = false } = Astro.props;
+const d = post.data;
+const href = `/blog/${post.id}`;
+---
+{featured ? (
+  <article class="card" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))">
+    <a href={href} tabindex="-1" aria-hidden="true"><Cover src={d.cover} alt={d.cover_alt} ratio="16-10" eager /></a>
+    <div class="card-body" style="padding:clamp(24px,3vw,40px);gap:18px">
+      <div class="card-meta"><span>Featured · {d.category}</span><span>{d.read_time} read</span></div>
+      <h2 style="font-stretch:125%;font-weight:800;font-size:clamp(30px,3.4vw,48px);line-height:1;letter-spacing:-.03em;text-wrap:balance"><a href={href} style="color:inherit;text-decoration:none">{d.title}</a></h2>
+      <p style="font-size:17px;line-height:1.55;color:var(--text-3);max-width:520px">{d.description}</p>
+      <div class="card-foot"><time class="muted" datetime={d.date.toISOString()} style="font-weight:400">{formatDate(d.date)}</time><a href={href} class="link-arrow" style="color:var(--white)">Read the guide →</a></div>
+    </div>
+  </article>
+) : (
+  <article class="card">
+    <a href={href} tabindex="-1" aria-hidden="true"><Cover src={d.cover} alt={d.cover_alt} ratio="16-9" /></a>
+    <div class="card-body" style="padding:22px">
+      <div class="card-meta"><span>{d.category}</span><span>{d.read_time}</span></div>
+      <h3 style="font-size:24px;line-height:1.15;font-weight:700;letter-spacing:-.01em;text-wrap:pretty"><a href={href} style="color:inherit;text-decoration:none">{d.title}</a></h3>
+      <p style="font-size:15px;line-height:1.55;color:var(--text-3)">{d.description}</p>
+      <time class="muted" datetime={d.date.toISOString()} style="margin-top:auto;padding-top:8px;font-size:14px">{formatDate(d.date)}</time>
+    </div>
+  </article>
+)}

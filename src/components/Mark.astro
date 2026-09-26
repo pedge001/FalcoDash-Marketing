@@ -1,0 +1,6 @@
+---
+// The FalcoDash mark ("Hidden E", logo exploration 2b). Keep proportions exactly as supplied.
+interface Props { size?: number; fill?: string; class?: string; title?: string }
+const { size = 34, fill = 'currentColor', class: cls, title } = Astro.props;
+---
+<svg viewBox="-26 -8 116 116" width={size} height={size} fill={fill} class={cls} role={title ? 'img' : undefined} aria-hidden={title ? undefined : 'true'} aria-label={title}><g transform="skewX(-20)"><path d="M10 14 L80 14 C87 14 92 19 92 26 L92 36 L82 26 L22 26 L22 74 L60 74 L60 86 L10 86 Z M30 34 L76 34 L76 46 L30 46 Z M30 54 L68 54 L68 66 L30 66 Z"></path></g></svg>

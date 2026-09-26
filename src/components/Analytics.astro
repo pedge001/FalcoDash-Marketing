@@ -1,0 +1,41 @@
+---
+// Third-party analytics, each switched on by a build-time env var so nothing loads until it's configured.
+//   PUBLIC_GA4_ID          Google Analytics 4 measurement ID (G-XXXXXXX)
+//   PUBLIC_CLARITY_ID      Microsoft Clarity project ID (heatmaps, session recordings)
+//   PUBLIC_CF_BEACON_TOKEN Cloudflare Web Analytics token (cookieless). Leave unset if Cloudflare
+//                          injects the beacon automatically for the proxied zone.
+// GA4 and Clarity set cookies, so they are skipped for visitors who send Global Privacy Control.
+// Both load after the page has loaded so they never compete with rendering.
+const ga4 = import.meta.env.PUBLIC_GA4_ID;
+const clarity = import.meta.env.PUBLIC_CLARITY_ID;
+const cf = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const cfg = JSON.stringify({ ga4: ga4 || '', clarity: clarity || '' });
+---
+{(ga4 || clarity) && (
+  <script is:inline define:vars={{ cfg }}>
+    (function () {
+      var c = JSON.parse(cfg);
+      if (navigator.globalPrivacyControl) return;
+      function load() {
+        if (c.ga4) {
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () { dataLayer.push(arguments); };
+          gtag('js', new Date());
+          gtag('config', c.ga4, { allow_google_signals: false, allow_ad_personalization_signals: false });
+          var s = document.createElement('script');
+          s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(c.ga4);
+          document.head.appendChild(s);
+        }
+        if (c.clarity) {
+          (function (w, d, t, i) {
+            w.clarity = w.clarity || function () { (w.clarity.q = w.clarity.q || []).push(arguments); };
+            var s = d.createElement(t); s.async = 1; s.src = 'https://www.clarity.ms/tag/' + i;
+            d.head.appendChild(s);
+          })(window, document, 'script', c.clarity);
+        }
+      }
+      if (document.readyState === 'complete') load(); else addEventListener('load', load);
+    })();
+  </script>
+)}
+{cf && <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: cf })}></script>}

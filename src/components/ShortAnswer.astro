@@ -1,0 +1,10 @@
+---
+// The direct answer to the page's main question. Marked with data-answer for the Speakable
+// selector, and written to stand on its own when quoted by an answer engine.
+interface Props { text: string; heading?: string }
+const { text, heading = 'Short answer' } = Astro.props;
+---
+<section class="answer-box" aria-labelledby="short-answer">
+  <h2 id="short-answer">{heading}</h2>
+  <p data-answer>{text}</p>
+</section>

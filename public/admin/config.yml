@@ -1,0 +1,80 @@
+# Decap CMS — FalcoDash blog. Served at falcodash.com/admin.
+# Editors sign in with GitHub. Saving a post commits Markdown to src/content/blog/ on GitHub;
+# Railway rebuilds and redeploys the site from main automatically.
+
+backend:
+  name: github
+  repo: pedge001/FalcoDash-Marketing
+  branch: main
+  base_url: https://falcodash.com      # the site itself hosts the OAuth handshake
+  auth_endpoint: api/decap/auth
+  commit_messages:
+    create: 'Blog: create "{{slug}}"'
+    update: 'Blog: update "{{slug}}"'
+    delete: 'Blog: delete "{{slug}}"'
+    uploadMedia: 'Blog: upload "{{path}}"'
+    deleteMedia: 'Blog: delete "{{path}}"'
+
+# Drafts → In review → Ready, before anything goes live. Drafts live on PR branches, so they never deploy.
+publish_mode: editorial_workflow
+
+# For local editing without GitHub: run `npx decap-server` and `npm run dev`, then open localhost:4321/admin.
+local_backend: true
+
+site_url: https://falcodash.com
+display_url: https://falcodash.com
+logo_url: https://falcodash.com/icon-512.png
+
+media_folder: "public/images/blog"
+public_folder: "/images/blog"
+
+collections:
+  - name: blog
+    label: Blog posts
+    label_singular: Blog post
+    folder: src/content/blog
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    identifier_field: title
+    preview_path: "blog/{{slug}}"
+    summary: "{{title}} · {{category}} · {{date | date('MMM D, YYYY')}}"
+    sortable_fields: [date, title, category]
+    view_filters:
+      - { label: Featured, field: featured, pattern: true }
+    fields:
+      - { name: title, label: Title, widget: string, hint: "Phrase it as the question people search, e.g. 'How much does AI automation cost?'" }
+      - { name: description, label: Excerpt / meta description, widget: text, hint: "Shown on cards and in Google results. Aim for 140–160 characters." }
+      - name: category
+        label: Category
+        widget: select
+        options: [Guides, Explainers, Real estate, Dashboards, Non-profits]
+      - { name: date, label: Publish date, widget: datetime, hint: "Posts dated in the future stay hidden until a build runs after that date." }
+      - { name: updated, label: Last updated, widget: datetime, required: false, hint: "Set when you revise a post. Search engines use it for freshness." }
+      - { name: read_time, label: Read time, widget: string, default: "5 min" }
+      - { name: featured, label: Feature at top of blog, widget: boolean, default: false, required: false }
+      - { name: cover, label: Cover image, widget: image, required: false, hint: "1600 × 900 or larger. Also used as the social share image." }
+      - { name: cover_alt, label: Cover image description, widget: string, required: false, hint: "Describe the image for screen readers and search." }
+      - name: short_answer
+        label: Short answer
+        widget: text
+        hint: "2–4 sentences that answer the title directly. This is what AI answer engines quote."
+      - name: sections
+        label: Sections
+        label_singular: Section
+        widget: list
+        summary: "{{fields.heading}}"
+        fields:
+          - { name: heading, label: Heading, widget: string, hint: "Question-shaped headings work best, e.g. 'What drives the cost?'" }
+          - { name: body, label: Body, widget: markdown, buttons: [bold, italic, link, heading-three, bulleted-list, numbered-list, quote], editor_components: [image] }
+      - name: faqs
+        label: Questions (FAQ)
+        label_singular: Question
+        widget: list
+        required: false
+        summary: "{{fields.question}}"
+        fields:
+          - { name: question, label: Question, widget: string }
+          - { name: answer, label: Answer, widget: text }
+      - { name: seo_title, label: SEO title override, widget: string, required: false, hint: "Leave blank to use the title. ' | FalcoDash' is added automatically." }

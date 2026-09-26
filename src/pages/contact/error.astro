@@ -1,0 +1,13 @@
+---
+import Base from '~/layouts/Base.astro';
+import { SITE } from '~/data/site';
+---
+<Base title="Something went wrong | FalcoDash" description="We couldn't send your request." path="/contact/error" noindex>
+  <section class="wrap section">
+    <div class="success-box" style="max-width:720px;border-color:#ff8a7a">
+      <p class="eyebrow">Not sent</p>
+      <h1 class="display-sm" style="font-size:clamp(36px,5vw,64px)">We couldn't send your request.</h1>
+      <p class="lede">Please check that your name, email and message are filled in and <a href="/contact">try again</a>, or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or call <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>.</p>
+    </div>
+  </section>
+</Base>

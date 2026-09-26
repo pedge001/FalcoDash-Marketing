@@ -1,0 +1,41 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { SITE } from '~/data/site';
+const updated = 'September 25, 2026';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Privacy', path: '/privacy' }];
+---
+<Base title="Privacy Policy | FalcoDash" description="How FalcoDash collects, uses and protects the information you share through falcodash.com." path="/privacy" breadcrumbs={crumbs}>
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1 class="display-sm">Privacy policy</h1>
+    <p class="updated mt-2">Last updated {updated}</p>
+  </section>
+  <section class="wrap section-tight">
+    <div class="prose">
+      <h2>What we collect</h2>
+      <p>When you request an audit or contact us, we collect the details you enter: your name, email address, company, industry, phone number (if given) and message. We also record the page you submitted from, your approximate location (country, region and city) as reported by our network provider, any campaign parameters in the link you used (such as <code>utm_source</code>), the referring site, your browser's user agent and a one-way hash of your IP address, which we use to prevent spam.</p>
+      <h2>Analytics</h2>
+      <p>To understand how the site is used, we use Google Analytics 4, Microsoft Clarity (which records anonymized page interactions such as clicks and scrolling) and Cloudflare Web Analytics (which uses no cookies). These services receive technical information such as the pages you view, your browser and device type and your approximate location derived from your IP address. Google Analytics and Clarity set cookies. Google signals and ad personalization are turned off, and we do not use this data for advertising.</p>
+      <p>If your browser sends a Global Privacy Control signal, we do not load Google Analytics or Clarity. You can also block these cookies in your browser settings.</p>
+      <p>This site does not use advertising cookies or sell your information.</p>
+      <h2>How we use it</h2>
+      <ul>
+        <li>To reply to your request and schedule your audit.</li>
+        <li>To send you a confirmation email for your request.</li>
+        <li>To understand which pages and campaigns bring people to us.</li>
+        <li>To protect the site from spam and abuse.</li>
+      </ul>
+      <h2>Who processes it</h2>
+      <p>We use a small number of service providers to run this site: Railway (hosting and database), Cloudflare (DNS, security and analytics), Resend (email delivery), Google (Analytics) and Microsoft (Clarity). They process data on our behalf and only as needed to provide their services.</p>
+      <h2>How long we keep it</h2>
+      <p>We keep inquiry records for as long as needed to respond and to maintain a record of our business relationship, and delete them on request.</p>
+      <h2>Your choices</h2>
+      <p>You can ask us to access, correct or delete the information we hold about you by emailing <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. California residents have additional rights under the CCPA, including the right to know and the right to delete; we do not sell or share personal information as those terms are defined in the CCPA.</p>
+      <h2>Client data</h2>
+      <p>Data we handle while building or running systems for clients is covered by our client agreements, not this policy. It stays in accounts the client owns.</p>
+      <h2>Contact</h2>
+      <p>{SITE.name} · {SITE.regionName}, United States · <a href={`mailto:${SITE.email}`}>{SITE.email}</a> · <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a></p>
+    </div>
+  </section>
+</Base>

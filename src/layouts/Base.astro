@@ -1,0 +1,108 @@
+---
+import '~/styles/global.css';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import Analytics from '~/components/Analytics.astro';
+import { SITE } from '~/data/site';
+import fontUrl from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import { abs, graph, organization, website, webPage, breadcrumbs as crumbsLd } from '~/lib/schema';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Canonical path, e.g. "/services/ai-workflows". Defaults to the current URL path. */
+  path?: string;
+  /** Path to the social image, e.g. "/og/services/ai-workflows.png". */
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: 'website' | 'article' | 'profile';
+  /** Extra JSON-LD nodes for this page. The Organization, WebSite and WebPage nodes are always added. */
+  schema?: object[];
+  pageType?: string;
+  breadcrumbs?: { name: string; path: string }[];
+  noindex?: boolean;
+  article?: { published: Date; modified: Date; section?: string };
+  dateModified?: string;
+}
+
+const {
+  title,
+  description,
+  path = Astro.url.pathname,
+  ogImage = '/og/default.png',
+  ogImageAlt = `${SITE.name}: ${SITE.tagline}`,
+  ogType = 'website',
+  schema = [],
+  pageType,
+  breadcrumbs,
+  noindex = false,
+  article,
+  dateModified,
+} = Astro.props;
+
+const canonical = abs(path);
+const ogUrl = abs(ogImage);
+const ld = graph(
+  organization(),
+  website(),
+  webPage({ path, title, description, type: pageType, dateModified }),
+  ...(breadcrumbs && breadcrumbs.length > 1 ? [crumbsLd(breadcrumbs)] : []),
+  ...schema,
+);
+---
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
+  <meta name="theme-color" content={SITE.themeColor} />
+  <meta name="color-scheme" content="dark" />
+  <meta name="author" content={SITE.name} />
+  <meta name="generator" content={Astro.generator} />
+
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="alternate" type="application/rss+xml" title="FalcoDash Blog" href="/blog/rss.xml" />
+  <link rel="alternate" type="text/plain" title="LLM-readable summary" href="/llms.txt" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+  <meta property="og:site_name" content={SITE.name} />
+  <meta property="og:locale" content={SITE.locale} />
+  <meta property="og:type" content={ogType} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogUrl} />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={ogImageAlt} />
+  {article && <meta property="article:published_time" content={article.published.toISOString()} />}
+  {article && <meta property="article:modified_time" content={article.modified.toISOString()} />}
+  {article?.section && <meta property="article:section" content={article.section} />}
+  {article && <meta property="article:author" content={SITE.name} />}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogUrl} />
+  <meta name="twitter:image:alt" content={ogImageAlt} />
+
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <slot name="head" />
+  <Analytics />
+</head>
+<body>
+  <Header />
+  <main id="main">
+    <slot />
+  </main>
+  <Footer />
+</body>
+</html>

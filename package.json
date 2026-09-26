@@ -1,0 +1,33 @@
+{
+  "name": "falcodash-marketing",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "node server.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "check": "astro check",
+    "icons": "node scripts/icons.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.6",
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/archivo": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^7.3.5",
+    "marked": "^18.0.14",
+    "postgres": "^3.4.9",
+    "resend": "^6.30.0",
+    "satori": "^0.33.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
+  }
+}

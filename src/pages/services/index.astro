@@ -1,0 +1,55 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import Engagement from '~/components/Engagement.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import FAQ from '~/components/FAQ.astro';
+import { SERVICES } from '~/data/services';
+import { faqPage, service, abs } from '~/lib/schema';
+
+const title = 'AI Automation Services | FalcoDash';
+const description = 'AI workflows, custom AI assistants, automations, dashboards, custom apps and managed automation. Every FalcoDash engagement starts with a free audit.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Services', path: '/services' }];
+const faqs = [
+  { q: 'What AI automation services does FalcoDash offer?', a: 'FalcoDash builds AI workflows, custom AI assistants and agents, business automations, dashboards and custom web and iOS apps, and runs them afterwards on a managed automation retainer.' },
+  { q: 'Where should a business start with AI automation?', a: 'With the repetitive process that costs the most hours each week. A free FalcoDash audit identifies it and gives you a written shortlist of what to automate first.' },
+  { q: 'Do you only work with AI?', a: 'No. We use the simplest reliable tool for each step. Many steps are plain rules and integrations; AI handles the parts that need reading, judgment or writing.' },
+];
+const schema = [
+  faqPage(faqs, '/services'),
+  { '@type': 'ItemList', name: 'FalcoDash services', itemListElement: SERVICES.map((s, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(`/services/${s.slug}`), name: s.name })) },
+  ...SERVICES.map((s) => service({ name: s.name, serviceType: s.serviceType, description: s.shortAnswer, path: `/services/${s.slug}` })),
+];
+---
+<Base title={title} description={description} path="/services" breadcrumbs={crumbs} schema={schema} ogImage="/og/services.png" pageType="CollectionPage">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <div class="page-head-grid">
+      <h1 class="display-sm">AI automation services, built and run for you.</h1>
+      <p class="lede">We find the repetitive work in your business and build software that does it. Then we keep it running.</p>
+    </div>
+  </section>
+  <section class="wrap section-tight">
+    <ShortAnswer heading="What we do" text="FalcoDash is an AI implementation and automation firm. We build AI workflows, custom AI assistants, automations between your tools, dashboards and custom apps, and we maintain them on a monthly retainer. Every project starts with a free audit and a fixed quote." />
+  </section>
+  <section class="wrap section-tight" aria-labelledby="list-h">
+    <div class="sec-head"><h2 id="list-h" class="h2">Services</h2><span class="meta">{SERVICES.length} ways we help</span></div>
+    <div class="grid-cells" style="--min:320px">
+      {SERVICES.map((s) => (
+        <a href={`/services/${s.slug}`} class="cell cell-tall">
+          <span class="num">{s.num}</span>
+          <h3>{s.name}</h3>
+          <p>{s.summary}</p>
+          <span class="more" aria-hidden="true">Learn more →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+  <Engagement />
+  <section class="wrap section split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions</h2></div>
+    <FAQ faqs={faqs} />
+  </section>
+  <CtaBand />
+</Base>

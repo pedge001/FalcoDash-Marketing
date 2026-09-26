@@ -1,0 +1,76 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import WorkCard from '~/components/WorkCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import FAQ from '~/components/FAQ.astro';
+import { INDUSTRIES, type Industry } from '~/data/industries';
+import { serviceBySlug } from '~/data/services';
+import { workByKey } from '~/data/work';
+import { getPosts } from '~/lib/blog';
+import { faqPage, service as serviceLd } from '~/lib/schema';
+
+export function getStaticPaths() {
+  return INDUSTRIES.map((i) => ({ params: { slug: i.slug }, props: { ind: i } }));
+}
+const { ind } = Astro.props as { ind: Industry };
+const path = `/industries/${ind.slug}`;
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Industries', path: '/industries' }, { name: ind.name, path }];
+const services = ind.services.map(serviceBySlug).filter((x) => !!x);
+const work = ind.work.map(workByKey).filter((x) => !!x);
+const posts = (await getPosts()).filter((p) => p.data.category === ind.blogCategory).slice(0, 3);
+const schema = [
+  serviceLd({ name: `AI automation for ${ind.name.toLowerCase()}`, serviceType: 'AI automation', description: ind.shortAnswer, path, audience: [ind.name] }),
+  faqPage(ind.faqs, path),
+];
+---
+<Base title={ind.seoTitle} description={ind.description} path={path} breadcrumbs={crumbs} schema={schema} ogImage={`/og/industries/${ind.slug}.png`}>
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <p class="eyebrow" style="margin-bottom:20px">Industries — {ind.name}</p>
+    <h1 class="display-sm" style="max-width:1040px">{ind.h1}</h1>
+    <div class="hero-actions" style="margin-top:32px">
+      <a href="/contact" class="btn btn-primary"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+  <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer text={ind.shortAnswer} /></div></section>
+
+  <section class="wrap section-tight" aria-labelledby="uc-h">
+    <div class="sec-head"><h2 id="uc-h" class="h2">What we build for {ind.name.toLowerCase()}</h2></div>
+    <div class="grid-cells" style="--min:280px">
+      {ind.useCases.map((u, i) => <div class="cell"><span class="num">{String(i + 1).padStart(2, '0')}</span><h3>{u.title}</h3><p>{u.body}</p></div>)}
+    </div>
+  </section>
+
+  {work.length > 0 && (
+    <section class="wrap section-tight" aria-labelledby="work-h">
+      <div class="sec-head"><h2 id="work-h" class="h2">Built and running</h2><a href="/work" class="meta">All work →</a></div>
+      <div class="grid-auto" style="--min:480px">{work.map((w) => <WorkCard work={w} />)}</div>
+    </section>
+  )}
+
+  <section class="wrap section-tight" aria-labelledby="svc-h">
+    <div class="sec-head"><h2 id="svc-h" class="h2">Services</h2><a href="/services" class="meta">All services →</a></div>
+    <div class="grid-cells" style="--min:240px">
+      {services.map((s) => (
+        <a href={`/services/${s.slug}`} class="cell"><span class="num">{s.num}</span><h3>{s.name}</h3><p>{s.summary}</p></a>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions</h2></div>
+    <FAQ faqs={ind.faqs} />
+  </section>
+
+  {posts.length > 0 && (
+    <section class="wrap section-tight" aria-labelledby="blog-h">
+      <div class="sec-head"><h2 id="blog-h" class="h2">Guides</h2><a href="/blog" class="meta">All posts →</a></div>
+      <div class="grid-auto">
+        {posts.map((p) => <a href={`/blog/${p.id}`} class="post-link"><span class="label">{p.data.category} · {p.data.read_time}</span><h3>{p.data.title}</h3></a>)}
+      </div>
+    </section>
+  )}
+  <CtaBand />
+</Base>

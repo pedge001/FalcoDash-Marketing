@@ -1,0 +1,11 @@
+---
+import BlogIndex from '~/components/blog/BlogIndex.astro';
+import { getPosts, categories } from '~/lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return categories().map((c) => ({ params: { cat: c.slug }, props: { category: c, posts: posts.filter((p) => p.data.category === c.name) } }));
+}
+const { category, posts } = Astro.props;
+---
+<BlogIndex posts={posts} category={category} />

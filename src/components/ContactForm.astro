@@ -1,0 +1,36 @@
+---
+// Audit request form. Works without JavaScript (posts and redirects to /contact/thanks);
+// with JavaScript it submits in place and swaps in the confirmation.
+import { INDUSTRY_OPTIONS } from '~/data/site';
+interface Props { id?: string; source?: string }
+const { id = 'audit-form', source = Astro.url.pathname } = Astro.props;
+---
+<div class="contact-form-wrap" data-form-wrap>
+  <form class="form" id={id} method="post" action="/api/contact" data-contact-form novalidate>
+    <label class="field"><span>Name</span><input class="input" name="name" autocomplete="name" required maxlength="120" /></label>
+    <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" required maxlength="200" /></label>
+    <label class="field"><span>Company <span class="opt">(optional)</span></span><input class="input" name="company" autocomplete="organization" maxlength="160" /></label>
+    <label class="field"><span>Industry</span>
+      <select class="input" name="industry">
+        {INDUSTRY_OPTIONS.map((o) => <option>{o}</option>)}
+      </select>
+    </label>
+    <label class="field full"><span>Phone <span class="opt">(optional)</span></span><input class="input" type="tel" name="phone" autocomplete="tel" maxlength="40" /></label>
+    <label class="field full"><span>What would you like to automate?</span><textarea class="input" name="message" rows="4" required maxlength="5000"></textarea></label>
+    <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <input type="hidden" name="source" value={source} />
+    <input type="hidden" name="t" value="" />
+    <input type="hidden" name="utm" value="" />
+    <button type="submit" class="btn btn-primary full"><span>Request my free audit</span><span aria-hidden="true">→</span></button>
+    <p class="form-status full" role="status" aria-live="polite" hidden></p>
+    <p class="form-note full">We reply within one business day. We never share your details. See our <a href="/privacy">privacy policy</a>.</p>
+  </form>
+  <div class="success-box" hidden tabindex="-1">
+    <h3>Thanks. We have your request.</h3>
+    <p class="body">We'll reach out to schedule your free audit. A confirmation is on its way to your inbox.</p>
+  </div>
+</div>
+<script>
+  import { initContactForms } from '~/scripts/contact';
+  initContactForms();
+</script>

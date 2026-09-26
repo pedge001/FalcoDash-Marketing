@@ -1,0 +1,29 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { SITE } from '~/data/site';
+const updated = 'September 25, 2026';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Terms', path: '/terms' }];
+---
+<Base title="Terms of Use | FalcoDash" description="The terms that apply when you use falcodash.com, including how you may use our content and the limits of the information we publish." path="/terms" breadcrumbs={crumbs}>
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1 class="display-sm">Terms of use</h1>
+    <p class="updated mt-2">Last updated {updated}</p>
+  </section>
+  <section class="wrap section-tight">
+    <div class="prose">
+      <p>These terms cover your use of falcodash.com. Client work is governed by a separate written agreement.</p>
+      <h2>Content</h2>
+      <p>The articles and guides on this site are general information, not professional, legal or financial advice. Every business is different; a scoped audit is the right place to get advice for yours.</p>
+      <h2>Intellectual property</h2>
+      <p>The FalcoDash name, mark and site content belong to FalcoDash. You may quote short passages with attribution and a link.</p>
+      <h2>Products</h2>
+      <p>FalcoDash products at app.falcodash.com, ca.falcodash.com, notes.falcodash.com and opz.falcodash.com and fieldyates.com have their own terms where applicable.</p>
+      <h2>No warranty</h2>
+      <p>The site is provided as is. We work to keep it accurate and available but do not guarantee it.</p>
+      <h2>Contact</h2>
+      <p>Questions about these terms: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+    </div>
+  </section>
+</Base>

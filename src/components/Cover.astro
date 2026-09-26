@@ -1,0 +1,13 @@
+---
+// Blog cover. Decap CMS uploads covers to public/images/blog and stores the public path.
+interface Props { src?: string | null; alt?: string | null; ratio?: '16-10' | '16-9' | '21-9'; eager?: boolean; width?: number; height?: number }
+const { src, alt, ratio = '16-9', eager = false } = Astro.props;
+const [w, h] = ratio === '21-9' ? [1680, 720] : ratio === '16-10' ? [1600, 1000] : [1600, 900];
+---
+<div class={`shot ar-${ratio}`}>
+  {src ? (
+    <img src={src} alt={alt ?? ''} width={w} height={h} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchpriority={eager ? 'high' : undefined} />
+  ) : (
+    <div class="shot-ph" aria-hidden="true"><span>Cover image</span></div>
+  )}
+</div>

@@ -1,0 +1,36 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { INDUSTRIES } from '~/data/industries';
+import { abs } from '~/lib/schema';
+
+const title = 'Industries We Serve | FalcoDash AI Automation';
+const description = 'AI automation for real estate teams, small and mid-size businesses, community associations, non-profits and public agencies across the United States.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Industries', path: '/industries' }];
+const schema = [{ '@type': 'ItemList', name: 'Industries FalcoDash serves', itemListElement: INDUSTRIES.map((i, n) => ({ '@type': 'ListItem', position: n + 1, url: abs(`/industries/${i.slug}`), name: i.name })) }];
+---
+<Base title={title} description={description} path="/industries" breadcrumbs={crumbs} schema={schema} ogImage="/og/industries.png" pageType="CollectionPage">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <div class="page-head-grid">
+      <h1 class="display-sm">Who we work with.</h1>
+      <p class="lede">Teams that run on data and spend too much of the week moving it around. Here is what we build for each.</p>
+    </div>
+  </section>
+  <section class="wrap section-tight">
+    {INDUSTRIES.map((i) => (
+      <article class="row" style="border-top:0">
+        <div class="stack" style="--gap:14px">
+          <h2 class="h3" style="font-size:28px"><a href={`/industries/${i.slug}`} style="color:var(--white);text-decoration:none">{i.name}</a></h2>
+          <a href={`/industries/${i.slug}`} class="link-arrow">See what we build →</a>
+        </div>
+        <div class="stack" style="--gap:18px">
+          <p class="body" style="font-size:17px">{i.shortAnswer}</p>
+          <ul class="ticks">{i.highlights.map((h) => <li>{h}</li>)}</ul>
+        </div>
+      </article>
+    ))}
+  </section>
+  <CtaBand />
+</Base>

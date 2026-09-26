@@ -1,0 +1,26 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import WorkCard from '~/components/WorkCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { WORK } from '~/data/work';
+import { abs } from '~/lib/schema';
+
+const title = 'Our Work: AI Products & Dashboards | FalcoDash';
+const description = 'What FalcoDash has built and runs: association dashboards, a California campaign-finance tracker, an iOS field app, AI offer analysis and a league data hub.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Work', path: '/work' }];
+const schema = [{ '@type': 'ItemList', name: 'FalcoDash work', itemListElement: WORK.map((w, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(`/work/${w.slug}`), name: w.name })) }];
+---
+<Base title={title} description={description} path="/work" breadcrumbs={crumbs} schema={schema} ogImage="/og/work.png" pageType="CollectionPage">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <div class="page-head-grid">
+      <h1 class="display-sm">Built and running.</h1>
+      <p class="lede">We build our own products with the same methods we use for clients. Each one is live and in daily use.</p>
+    </div>
+  </section>
+  <section class="wrap section-tight">
+    <div class="grid-auto" style="--min:520px">{WORK.map((w) => <WorkCard work={w} headingTag="h2" />)}</div>
+  </section>
+  <CtaBand heading="Want something like this for your team?" />
+</Base>

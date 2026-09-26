@@ -1,0 +1,51 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import PostCard from '~/components/PostCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { categories, orderForIndex, type Post } from '~/lib/blog';
+import { SITE } from '~/data/site';
+import { abs, ORG_ID } from '~/lib/schema';
+
+interface Props { posts: Post[]; category?: { name: string; slug: string } }
+const { posts, category } = Astro.props;
+const list = orderForIndex(posts);
+const [featured, ...rest] = list;
+const path = category ? `/blog/category/${category.slug}` : '/blog';
+const title = category ? `${category.name} | FalcoDash Blog` : 'Blog | FalcoDash: AI Automation Guides';
+const description = category
+  ? `FalcoDash guides on ${category.name.toLowerCase()}: practical answers on AI automation, AI workflows, dashboards and custom apps.`
+  : 'Practical guides on AI automation, AI workflows, dashboards and custom apps for real estate teams, businesses, associations and non-profits.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, ...(category ? [{ name: category.name, path }] : [])];
+const schema = [
+  {
+    '@type': 'Blog',
+    '@id': `${SITE.url}/blog#blog`,
+    name: 'FalcoDash Blog',
+    url: abs('/blog'),
+    publisher: { '@id': ORG_ID },
+    blogPost: list.map((p) => ({ '@type': 'BlogPosting', headline: p.data.title, url: abs(`/blog/${p.id}`), datePublished: p.data.date.toISOString() })),
+  },
+];
+---
+<Base title={title} description={description} path={path} breadcrumbs={crumbs} schema={schema} ogImage="/og/blog.png" pageType="CollectionPage">
+  <section class="wrap page-head" style="padding-bottom:0">
+    <Breadcrumbs items={crumbs} />
+    <p class="eyebrow" style="margin-bottom:24px">FalcoDash Blog{category && ` — ${category.name}`}</p>
+    <div class="page-head-grid">
+      <h1 class="display-sm" style="font-size:clamp(44px,6vw,88px);line-height:.95">{category ? category.name : 'Guides to AI, automation and better data.'}</h1>
+      <p class="lede">Plain answers for teams deciding what to automate, what it costs and how to keep it running.</p>
+    </div>
+    <nav class="chips" aria-label="Categories">
+      <a class="chip" href="/blog" aria-current={!category ? 'page' : undefined}>All</a>
+      {categories().map((c) => <a class="chip" href={`/blog/category/${c.slug}`} aria-current={category?.slug === c.slug ? 'page' : undefined}>{c.name}</a>)}
+    </nav>
+  </section>
+  <section class="wrap" style="padding-top:40px">
+    {featured ? <PostCard post={featured} featured /> : <p class="body">No posts in this category yet.</p>}
+  </section>
+  <section class="wrap section-tight" style="padding-top:24px">
+    <div class="grid-fill">{rest.map((p) => <PostCard post={p} />)}</div>
+  </section>
+  <CtaBand />
+</Base>

@@ -1,0 +1,62 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { SITE } from '~/data/site';
+import { PRINCIPLES } from '~/data/engagement';
+import { founder } from '~/lib/schema';
+
+const title = 'About FalcoDash | AI Implementation & Automation Firm';
+const description = 'FalcoDash is a California AI implementation and automation firm founded by Patrick Edgett. We connect scattered data and put it to work for your team.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }];
+const schema = [founder()];
+---
+<Base title={title} description={description} path="/about" breadcrumbs={crumbs} schema={schema} ogImage="/og/about.png" pageType="AboutPage">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <p class="eyebrow" style="margin-bottom:20px">About FalcoDash</p>
+    <h1 class="display-sm" style="max-width:1040px">Most companies already have the data they need.</h1>
+    <p class="lede">It sits in spreadsheets, inboxes and disconnected tools, and people spend their week moving it around. We connect it, clean it and put it to work, so the right numbers reach the right person at the moment a decision gets made.</p>
+  </section>
+
+  <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer heading="Who is FalcoDash?" text={SITE.description} /></div></section>
+
+  <section class="wrap section-tight split" aria-labelledby="story-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="story-h" class="h2">From one dashboard to every system a business runs on</h2></div>
+    <div class="prose" style="border-top:2px solid var(--white);padding-top:16px">
+      <p>The first FalcoDash product was a single dashboard: real-time financials for community association boards, now at <a href="https://app.falcodash.com">app.falcodash.com</a>. It proved a simple idea. When data is connected and current, boards and owners make better decisions, faster.</p>
+      <p>FalcoDash now applies the same thinking to every system a business runs on. We build AI workflows that read and draft, custom AI assistants that know your business, automations that move data between your tools, dashboards that show what matters and custom apps for the jobs off-the-shelf software does not fit.</p>
+      <p>We are based in California and work with clients across the United States.</p>
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" aria-labelledby="founder-h">
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+      <p class="label">Founder</p>
+      <h2 id="founder-h" class="h2">{SITE.founder.name}</h2>
+    </div>
+    <div class="prose" style="border-top:2px solid var(--white);padding-top:16px">
+      <p>Patrick Edgett is a builder, realtor and operator. Before FalcoDash he ran multi-channel marketing campaigns across TV, radio, digital and print, built and led operations teams, and standardized CRM workflows for growing businesses. He is a licensed California Realtor, which is why FalcoDash's real estate tools are built around how transactions actually run.</p>
+      <p>That mix of operating experience is the point. FalcoDash starts with the business problem, not the model, and measures every system by the work it removes. More on <a href={SITE.founder.linkedin} rel="noopener">LinkedIn</a> and at <a href={SITE.founder.url}>pennyempire.com</a>.</p>
+    </div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="how-h">
+    <div class="sec-head"><h2 id="how-h" class="h2">Built to be owned</h2><a href="/how-we-work" class="meta">How we work →</a></div>
+    <div class="grid-cells principles">{PRINCIPLES.map((p) => <div><h3>{p.h}</h3><p>{p.p}</p></div>)}</div>
+  </section>
+
+  <section class="wrap section-tight split" aria-labelledby="personality-h">
+    <h2 id="personality-h" class="sr-only">How we operate</h2>
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px;--gap:12px">
+      <p class="label">Bold and fast</p>
+      <p class="body" style="font-size:18px">We ship working systems in weeks, not quarters. Short scopes, clear owners and no hedging.</p>
+    </div>
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px;--gap:12px">
+      <p class="label">Consultative</p>
+      <p class="body" style="font-size:18px">We start with the business problem, not the model. Every engagement is scoped, documented and owned by someone on your team.</p>
+    </div>
+  </section>
+  <CtaBand heading="Tell us what's slowing your team down." />
+</Base>

@@ -1,0 +1,95 @@
+---
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import WorkCard from '~/components/WorkCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import FAQ from '~/components/FAQ.astro';
+import { SERVICES, type Service } from '~/data/services';
+import { industryBySlug } from '~/data/industries';
+import { workByKey } from '~/data/work';
+import { faqPage, service as serviceLd } from '~/lib/schema';
+
+export function getStaticPaths() {
+  return SERVICES.map((s) => ({ params: { slug: s.slug }, props: { s } }));
+}
+const { s } = Astro.props as { s: Service };
+const path = `/services/${s.slug}`;
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Services', path: '/services' }, { name: s.name, path }];
+const industries = s.industries.map(industryBySlug).filter((x) => !!x);
+const work = s.work.map(workByKey).filter((x) => !!x);
+const others = SERVICES.filter((x) => x.slug !== s.slug);
+const schema = [
+  serviceLd({ name: s.name, serviceType: s.serviceType, description: s.shortAnswer, path, audience: industries.map((i) => i.name) }),
+  faqPage(s.faqs, path),
+];
+---
+<Base title={s.seoTitle} description={s.description} path={path} breadcrumbs={crumbs} schema={schema} ogImage={`/og/services/${s.slug}.png`}>
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <p class="eyebrow" style="margin-bottom:20px">{s.num} — {s.name}</p>
+    <h1 class="display-sm" style="max-width:1040px">{s.h1}</h1>
+    <p class="lede">{s.summary}</p>
+    <div class="hero-actions" style="margin-top:32px">
+      <a href="/contact" class="btn btn-primary"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section class="wrap section-tight">
+    <div style="max-width:900px"><ShortAnswer heading={s.question} text={s.shortAnswer} /></div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="ex-h">
+    <div class="sec-head"><h2 id="ex-h" class="h2">{s.examplesHeading}</h2></div>
+    <div class="grid-cells" style="--min:280px">
+      {s.examples.map((e, i) => (
+        <div class="cell"><span class="num">{String(i + 1).padStart(2, '0')}</span><h3>{e.title}</h3><p>{e.body}</p></div>
+      ))}
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="steps-h">
+    <div class="wrap section">
+      <h2 id="steps-h" class="display-sm" style="margin-bottom:48px">{s.stepsHeading}</h2>
+      <ol class="steps">
+        {s.steps.map((st, i) => <li><span class="k">Step {String(i + 1).padStart(2, '0')}</span><h3>{st.title}</h3><p>{st.body}</p></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="wrap section split" aria-labelledby="fit-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="fit-h" class="h2">{s.fitHeading}</h2></div>
+    <ul class="ticks ticks-col" style="font-size:18px;border-top:2px solid var(--white);padding-top:24px">{s.fit.map((f) => <li>{f}</li>)}</ul>
+  </section>
+
+  {work.length > 0 && (
+    <section class="wrap section-tight" aria-labelledby="work-h">
+      <div class="sec-head"><h2 id="work-h" class="h2">Built and running</h2><a href="/work" class="meta">All work →</a></div>
+      <div class="grid-auto" style="--min:480px">{work.map((w) => <WorkCard work={w} />)}</div>
+    </section>
+  )}
+
+  {industries.length > 0 && (
+    <section class="wrap section-tight" aria-labelledby="ind-h">
+      <div class="sec-head" style="margin-bottom:24px"><h2 id="ind-h" class="h2">Who it's for</h2><a href="/industries" class="meta">All industries →</a></div>
+      {industries.map((i) => (
+        <div class="row"><h3><a href={`/industries/${i.slug}`}>{i.name}</a></h3><ul class="ticks">{i.highlights.map((h) => <li>{h}</li>)}</ul></div>
+      ))}
+    </section>
+  )}
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions about {s.name.toLowerCase().replace(/^ai/, 'AI')}</h2></div>
+    <FAQ faqs={s.faqs} />
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="more-h">
+    <div class="sec-head"><h2 id="more-h" class="h2">Other services</h2></div>
+    <div class="grid-auto" style="--min:240px">
+      {others.map((o) => (
+        <a href={`/services/${o.slug}`} class="post-link"><span class="label">{o.num}</span><h3>{o.name}</h3></a>
+      ))}
+    </div>
+  </section>
+  <CtaBand />
+</Base>

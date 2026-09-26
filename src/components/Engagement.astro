@@ -1,0 +1,20 @@
+---
+import { STEPS } from '~/data/engagement';
+interface Props { heading?: string; intro?: string }
+const {
+  heading = 'Audit. Build. Run.',
+  intro = 'Start with a free audit. Build what pays back first. Then let us run it, so it keeps working after launch.',
+} = Astro.props;
+---
+<section class="band" id="engagement" aria-labelledby="engagement-h">
+  <div class="wrap section">
+    <div class="split" style="--min:420px;gap:32px;align-items:end;margin-bottom:56px">
+      <h2 id="engagement-h" class="display-sm" style="line-height:.95">{heading}</h2>
+      <p style="font-size:18px;line-height:1.55;max-width:520px">{intro}</p>
+    </div>
+    <ol class="steps">
+      {STEPS.map((s) => <li><span class="k">{s.k}</span><h3>{s.h}</h3><p>{s.p}</p></li>)}
+    </ol>
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,43 @@
+---
+import Mark from './Mark.astro';
+import { SITE, PRODUCTS } from '~/data/site';
+import { SERVICES } from '~/data/services';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="col" style="gap:14px">
+      <a href="/" class="brand" style="margin:0"><Mark size={30} fill="var(--ice)" /><span class="wordmark" style="font-size:18px">FalcoDash</span></a>
+      <span class="muted">{SITE.shortDescription}</span>
+      <span class="muted">{SITE.tagline}</span>
+    </div>
+    <nav class="col" aria-label="Services">
+      <span class="col-h">Services</span>
+      {SERVICES.map((s) => <a href={`/services/${s.slug}`}>{s.name}</a>)}
+    </nav>
+    <nav class="col" aria-label="Company">
+      <span class="col-h">Company</span>
+      <a href="/work">Work</a>
+      <a href="/industries">Industries</a>
+      <a href="/how-we-work">How we work</a>
+      <a href="/about">About</a>
+      <a href="/blog">Blog</a>
+      <a href="/faq">FAQ</a>
+    </nav>
+    <nav class="col" aria-label="Products">
+      <span class="col-h">Products</span>
+      {PRODUCTS.map((p) => <a href={p.href}>{p.label}</a>)}
+    </nav>
+    <div class="col">
+      <span class="col-h">Contact</span>
+      <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      <a href={SITE.founder.linkedin} rel="me noopener">LinkedIn</a>
+      <span class="muted">California · Serving the US</span>
+    </div>
+  </div>
+  <div class="wrap footer-base">
+    <span>© {year} FalcoDash. {SITE.tagline}</span>
+    <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/blog/rss.xml">RSS</a> · <a href="/llms.txt">llms.txt</a></span>
+  </div>
+</footer>

@@ -1,0 +1,10 @@
+---
+interface Props { heading?: string; label?: string; href?: string }
+const { heading = "Have a process you'd like to automate?", label = 'Get a free automation audit', href = '/contact' } = Astro.props;
+---
+<section class="band" aria-label="Get started">
+  <div class="wrap cta-band">
+    <h2>{heading}</h2>
+    <a href={href} class="btn btn-dark"><span>{label}</span><span aria-hidden="true">→</span></a>
+  </div>
+</section>

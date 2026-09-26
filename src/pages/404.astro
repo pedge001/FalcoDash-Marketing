@@ -1,0 +1,16 @@
+---
+import Base from '~/layouts/Base.astro';
+import { NAV } from '~/data/site';
+---
+<Base title="Page not found | FalcoDash" description="That page doesn't exist." path="/404" noindex>
+  <section class="wrap section">
+    <p class="eyebrow" style="margin-bottom:24px">404</p>
+    <h1 class="display-sm">That page doesn't exist.</h1>
+    <p class="lede" style="margin-top:24px">Looking for the association dashboard? It moved to <a href="https://app.falcodash.com">app.falcodash.com</a>.</p>
+    <ul class="ticks mt-3" style="max-width:900px">
+      <li><a href="/">Home</a></li>
+      {NAV.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+  </section>
+</Base>

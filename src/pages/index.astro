@@ -1,0 +1,176 @@
+---
+import Base from '~/layouts/Base.astro';
+import Engagement from '~/components/Engagement.astro';
+import WorkCard from '~/components/WorkCard.astro';
+import FAQ from '~/components/FAQ.astro';
+import ContactForm from '~/components/ContactForm.astro';
+import { SITE } from '~/data/site';
+import { SERVICES } from '~/data/services';
+import { INDUSTRIES } from '~/data/industries';
+import { WORK } from '~/data/work';
+import { CORE_FAQS } from '~/data/faqs';
+import { PRINCIPLES } from '~/data/engagement';
+import { getPosts, formatMonth } from '~/lib/blog';
+import { faqPage, ORG_ID } from '~/lib/schema';
+
+const title = 'FalcoDash | AI Automation, AI Workflows & Custom Apps';
+const description =
+  'FalcoDash designs, builds and runs AI workflows, custom AI assistants, automations, dashboards and custom apps for teams across the US. Start with a free audit.';
+
+const posts = (await getPosts()).slice(0, 3);
+
+// The layered 3D mark: 26 copies of the mark stepped back in Z, fading from Ice to near-black.
+const N = 26, a = [46, 150, 150], b = [4, 28, 28];
+const layers = Array.from({ length: N }, (_, n) => N - 1 - n).map((i) => {
+  const k = i / (N - 1);
+  const fill = i === 0 ? '#b2ffff' : `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * k)).join(',')})`;
+  return { z: -i * 2, fill };
+});
+const marquee = ['AI workflows', 'app.falcodash.com', 'AI assistants', 'ca.falcodash.com', 'Automations', 'notes.falcodash.com', 'Dashboards', 'opz.falcodash.com', 'Custom apps', 'fieldyates.com'];
+const homeServices = SERVICES.filter((s) => s.slug !== 'managed-automation');
+
+const schema = [
+  faqPage(CORE_FAQS, '/'),
+  {
+    '@type': 'OfferCatalog',
+    '@id': `${SITE.url}/#services`,
+    name: 'FalcoDash services',
+    itemListElement: SERVICES.map((s) => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', name: s.name, url: `${SITE.url}/services/${s.slug}`, provider: { '@id': ORG_ID } },
+    })),
+  },
+];
+---
+<Base title={title} description={description} path="/" schema={schema}>
+  <div class="hero-shell" data-hero>
+    <canvas class="hero-field" aria-hidden="true"></canvas>
+    <section class="wrap hero" aria-labelledby="hero-h">
+      <div data-hero-copy>
+        <p class="eyebrow" style="margin-bottom:28px">{SITE.descriptor}</p>
+        <h1 id="hero-h" class="display">Custom AI automation for teams that run on data.</h1>
+        <p class="lede" data-answer>FalcoDash designs, builds and runs AI workflows, custom AI assistants, automations, dashboards and custom apps. We work with real estate teams, growing businesses, associations and non-profits across the United States.</p>
+        <div class="hero-actions">
+          <a href="/contact" class="btn btn-primary"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
+          <a href="#work" class="btn btn-outline"><span>See the work</span><span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+      <div class="hero-mark" aria-hidden="true">
+        <div class="mark3d">
+          <div class="mark3d-inner" data-mark>
+            {layers.map((l) => (
+              <svg viewBox="-26 -8 116 116" style={`transform:translateZ(${l.z}px);fill:${l.fill}`}><g transform="skewX(-20)"><path d="M10 14 L80 14 C87 14 92 19 92 26 L92 36 L82 26 L22 26 L22 74 L60 74 L60 86 L10 86 Z M30 34 L76 34 L76 46 L30 46 Z M30 54 L68 54 L68 66 L30 66 Z" /></g></svg>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      {[...marquee, ...marquee].map((t) => <span>{t}<i></i></span>)}
+    </div>
+  </div>
+
+  <section id="services" class="wrap section" aria-labelledby="services-h">
+    <div class="sec-head">
+      <h2 id="services-h" class="h2">What we build</h2>
+      <span class="meta">01 — Services</span>
+    </div>
+    <div class="grid-cells" style="--min:240px">
+      {homeServices.map((s) => (
+        <a href={`/services/${s.slug}`} class="cell cell-tall">
+          <span class="num">{s.num}</span>
+          <h3>{s.name}</h3>
+          <p>{s.summary}</p>
+          <span class="more" aria-hidden="true">Learn more →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section id="work" class="wrap section-tight" aria-labelledby="work-h">
+    <div class="sec-head">
+      <h2 id="work-h" class="h2">Built and running</h2>
+      <a href="/work" class="meta">All work →</a>
+    </div>
+    <div class="grid-auto" style="--min:520px">
+      {WORK.map((w) => <WorkCard work={w} />)}
+    </div>
+  </section>
+
+  <Engagement>
+    <p class="mt-3"><a href="/how-we-work" class="btn btn-dark btn-sm"><span>How we work</span><span aria-hidden="true">→</span></a></p>
+  </Engagement>
+
+  <section id="industries" class="wrap section" aria-labelledby="industries-h">
+    <div class="sec-head" style="margin-bottom:24px">
+      <h2 id="industries-h" class="h2">Who we work with</h2>
+      <span class="meta">02 — Industries</span>
+    </div>
+    {INDUSTRIES.map((i) => (
+      <div class="row">
+        <h3><a href={`/industries/${i.slug}`}>{i.name}</a></h3>
+        <ul class="ticks">{i.highlights.map((h) => <li>{h}</li>)}</ul>
+      </div>
+    ))}
+  </section>
+
+  <section id="about" class="wrap section-tight" aria-labelledby="about-h">
+    <div class="split" style="border-top:2px solid var(--white);padding-top:16px">
+      <div class="stack">
+        <h2 id="about-h" class="h2">Built to be owned</h2>
+        <p class="lede" style="font-size:18px;color:var(--text-3);max-width:480px">Every system we ship is yours: documented, handed over and measured against the work it removes.</p>
+        <a href="/about" class="link-arrow">About FalcoDash →</a>
+      </div>
+      <div class="grid-cells principles">
+        {PRINCIPLES.map((p) => <div><h3>{p.h}</h3><p>{p.p}</p></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section id="blog" class="wrap section-tight" aria-labelledby="blog-h">
+    <div class="sec-head" style="margin-bottom:40px">
+      <h2 id="blog-h" class="h2">From the blog</h2>
+      <a href="/blog" class="meta">All posts →</a>
+    </div>
+    <div class="grid-auto">
+      {posts.map((p) => (
+        <a href={`/blog/${p.id}`} class="post-link">
+          <span class="label">{p.data.category} · {p.data.read_time}</span>
+          <h3>{p.data.title}</h3>
+          <time class="muted" style="font-size:14px" datetime={p.data.date.toISOString()}>{formatMonth(p.data.date)}</time>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section id="faq" class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px" class="stack">
+      <h2 id="faq-h" class="h2">Questions, answered</h2>
+      <a href="/faq" class="link-arrow">All questions →</a>
+    </div>
+    <FAQ faqs={CORE_FAQS} />
+  </section>
+
+  <section id="contact" style="border-top:2px solid var(--ice)" aria-labelledby="contact-h">
+    <div class="wrap section split" style="gap:56px">
+      <div class="stack">
+        <h2 id="contact-h" class="display-sm" style="font-size:clamp(44px,6vw,88px);line-height:.95">{SITE.tagline}</h2>
+        <p style="font-size:18px;line-height:1.55;color:var(--text-3);max-width:460px">Tell us what's slowing your team down. We'll set up a free audit and show you what to automate first.</p>
+        <div class="stack" style="--gap:6px;font-size:17px;margin-top:8px">
+          <a href={`tel:${SITE.phone}`} style="color:var(--white);text-decoration:none">{SITE.phoneDisplay}</a>
+          <a href={`mailto:${SITE.email}`} style="color:var(--white);text-decoration:none">{SITE.email}</a>
+          <span class="muted" style="font-size:15px">{SITE.locationLine}</span>
+        </div>
+      </div>
+      <ContactForm source="home" />
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { initHero } from '~/scripts/hero';
+  initHero();
+</script>
