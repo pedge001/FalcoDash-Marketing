@@ -6,6 +6,7 @@
 :root {
   --black: #000;
   --ice: #b2ffff;
+  --butter: #ffe58a;
   --ice-100: #effffe;
   --ice-400: #7de6e6;
   --ice-700: #0b6b6b;
@@ -65,8 +66,13 @@ summary { list-style: none; }
 .section-tight { padding-bottom: var(--section-y); }
 .grid-auto { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 300px)), 1fr)); }
 .grid-fill { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--min, 340px)), 1fr)); }
-.grid-cells { display: grid; gap: 2px; background: var(--line); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 260px)), 1fr)); border: 2px solid var(--line); }
-.grid-cells > * { background: var(--black); }
+/* Ruled cells: each cell draws its own right/bottom rule, so a short last row ends cleanly instead of
+   leaving an empty filled block. */
+.grid-cells { display: grid; gap: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 260px)), 1fr)); border-top: 2px solid var(--line); border-left: 2px solid var(--line); }
+.grid-cells > * { background: var(--black); border-right: 2px solid var(--line); border-bottom: 2px solid var(--line); }
+.cols-3 { grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cols-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .cols-3 { grid-template-columns: repeat(3, 1fr); } }
 .split { display: grid; gap: 48px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 420px)), 1fr)); }
 .stack { display: flex; flex-direction: column; gap: var(--gap, 24px); }
 
@@ -162,7 +168,8 @@ summary { list-style: none; }
 /* ---------- Cards ---------- */
 .cell { padding: 28px 24px 32px; display: flex; flex-direction: column; gap: 14px; }
 .cell-tall { min-height: 280px; }
-.cell-tall h3 { margin-top: auto; }
+.cell-tall h3 { margin-top: 28px; }
+.cell.cell-tall .more { margin-top: auto; padding-top: 10px; }
 .cell h3 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
 .cell p { font-size: 16px; line-height: 1.55; color: var(--text-3); }
 a.cell { color: var(--white); text-decoration: none; transition: background-color .15s; }

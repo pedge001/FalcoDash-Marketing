@@ -35,7 +35,7 @@ const schema = [
   </section>
   <section class="wrap section-tight" aria-labelledby="list-h">
     <div class="sec-head"><h2 id="list-h" class="h2">Services</h2><span class="meta">{SERVICES.length} ways we help</span></div>
-    <div class="grid-cells" style="--min:320px">
+    <div class="grid-cells cols-3">
       {SERVICES.map((s) => (
         <a href={`/services/${s.slug}`} class="cell cell-tall">
           <span class="num">{s.num}</span>

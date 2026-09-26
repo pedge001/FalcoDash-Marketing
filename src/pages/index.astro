@@ -27,7 +27,6 @@ const layers = Array.from({ length: N }, (_, n) => N - 1 - n).map((i) => {
   return { z: -i * 2, fill };
 });
 const marquee = ['AI workflows', 'app.falcodash.com', 'AI assistants', 'ca.falcodash.com', 'Automations', 'notes.falcodash.com', 'Dashboards', 'opz.falcodash.com', 'Custom apps', 'fieldyates.com'];
-const homeServices = SERVICES.filter((s) => s.slug !== 'managed-automation');
 
 const schema = [
   faqPage(CORE_FAQS, '/'),
@@ -48,7 +47,7 @@ const schema = [
     <section class="wrap hero" aria-labelledby="hero-h">
       <div data-hero-copy>
         <p class="eyebrow" style="margin-bottom:28px">{SITE.descriptor}</p>
-        <h1 id="hero-h" class="display">Custom AI automation for teams that run on data.</h1>
+        <h1 id="hero-h" class="display">Custom <span style="color:var(--butter)">AI</span> automation for teams that run on data.</h1>
         <p class="lede" data-answer>FalcoDash designs, builds and runs AI workflows, custom AI assistants, automations, dashboards and custom apps. We work with real estate teams, growing businesses, associations and non-profits across the United States.</p>
         <div class="hero-actions">
           <a href="/contact" class="btn btn-primary"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
@@ -78,8 +77,8 @@ const schema = [
       <h2 id="services-h" class="h2">What we build</h2>
       <span class="meta">01 — Services</span>
     </div>
-    <div class="grid-cells" style="--min:240px">
-      {homeServices.map((s) => (
+    <div class="grid-cells cols-3">
+      {SERVICES.map((s) => (
         <a href={`/services/${s.slug}`} class="cell cell-tall">
           <span class="num">{s.num}</span>
           <h3>{s.name}</h3>
