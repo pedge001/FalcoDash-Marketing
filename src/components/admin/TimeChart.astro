@@ -1,0 +1,42 @@
+---
+// Visitors per period as bars, one series on one axis. Hover shows visitors, page views and leads.
+import { int } from '~/lib/format';
+// bucket is a Pacific wall-clock time serialized with a Z so it formats identically in UTC.
+interface Point { bucket: string; visitors: number; pageviews: number; leads: number }
+interface Props { data: Point[]; bucket: 'hour' | 'day' | 'week' }
+const { data, bucket } = Astro.props;
+const W = 1200, H = 260, L = 44, R = 8, T = 12, B = 28;
+const max = Math.max(1, ...data.map((d) => d.visitors));
+// "Nice" axis max.
+const mag = 10 ** Math.floor(Math.log10(max));
+const top = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((m) => m >= max) ?? max;
+const ticks = [0, top / 2, top];
+const n = Math.max(1, data.length);
+const bw = (W - L - R) / n;
+const gap = n > 60 ? 1 : 2;
+const y = (v: number) => T + (H - T - B) * (1 - v / top);
+const labelEvery = Math.ceil(n / 8);
+const fmtUtc = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...(bucket === 'hour' ? { hour: 'numeric' } : { month: 'short', day: 'numeric' }) });
+---
+<svg class="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Visitors per ${bucket}`}>
+  {ticks.map((t) => (
+    <g>
+      <line class="grid" x1={L} x2={W - R} y1={y(t)} y2={y(t)} />
+      <text class="axis" x={L - 8} y={y(t) + 4} text-anchor="end">{int(Math.round(t))}</text>
+    </g>
+  ))}
+  {data.map((d, i) => {
+    const x = L + i * bw;
+    const h = (H - T - B) - (y(d.visitors) - T);
+    const tipText = `${bucket === 'week' ? 'Week of ' : ''}${fmtUtc.format(new Date(d.bucket))}\n${int(d.visitors)} visitors · ${int(d.pageviews)} page views${d.leads ? `\n${d.leads} lead${d.leads > 1 ? 's' : ''}` : ''}`;
+    return (
+      <g data-tip={tipText} tabindex="0">
+        <rect class="hit" x={x} y={T} width={bw} height={H - T - B} />
+        {d.visitors > 0 && <rect class="bar" x={x + gap / 2} y={y(d.visitors)} width={Math.max(1, bw - gap)} height={Math.max(1, h)} />}
+        {d.leads > 0 && <rect x={x + gap / 2} y={H - B + 3} width={Math.max(1, bw - gap)} height={3} fill="var(--white)" />}
+        {i % labelEvery === 0 && <text class="axis" x={x + bw / 2} y={H - 6} text-anchor="middle">{fmtUtc.format(new Date(d.bucket))}</text>}
+      </g>
+    );
+  })}
+</svg>
+<p class="note" style="margin-top:6px">Bars: unique visitors. White ticks under a bar mark days with leads. Hover a bar for page views and leads.</p>

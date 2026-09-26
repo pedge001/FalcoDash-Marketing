@@ -1,0 +1,49 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import Mark from '~/components/Mark.astro';
+import { createSession, isAdmin, passwordMatches, recordAttempt, tooManyAttempts } from '~/lib/auth';
+import { clientIp, hashIp } from '~/lib/request';
+import { db } from '~/lib/db';
+
+export const prerender = false;
+
+const rawNext = Astro.url.searchParams.get('next') || '/admin';
+// Only allow same-site admin paths as the post-login destination.
+const next = /^\/admin(\/[^/].*)?(\?.*)?$/.test(rawNext) && !rawNext.startsWith('/admin/cms') ? rawNext : '/admin';
+let error = '';
+
+if (!process.env.ADMIN_PASSWORD) error = 'ADMIN_PASSWORD is not set on the server.';
+else if (!db()) error = 'DATABASE_URL is not set on the server.';
+else if (Astro.request.method === 'GET' && (await isAdmin(Astro.cookies))) return Astro.redirect(next, 303);
+
+if (Astro.request.method === 'POST' && !error) {
+  let ip = 'unknown';
+  try { ip = clientIp(Astro.request, Astro.clientAddress); } catch { ip = clientIp(Astro.request); }
+  const ipHash = hashIp(ip);
+  if (await tooManyAttempts(ipHash)) {
+    error = 'Too many attempts. Try again in 15 minutes.';
+  } else {
+    const form = await Astro.request.formData();
+    const ok = passwordMatches(String(form.get('password') || ''));
+    await recordAttempt(ipHash, ok);
+    if (ok) {
+      await createSession(Astro.cookies, Astro.url.protocol === 'https:' || !!process.env.RAILWAY_ENVIRONMENT_NAME, ipHash, Astro.request.headers.get('user-agent') || '');
+      return Astro.redirect(next, 303);
+    }
+    // Small fixed delay to slow guessing.
+    await new Promise((r) => setTimeout(r, 600));
+    error = 'Wrong password.';
+  }
+}
+---
+<AdminLayout title="Sign in" bare>
+  <div style="max-width:420px;margin:8vh auto 0" class="stack">
+    <a href="/" class="brand" style="margin:0"><Mark size={34} fill="var(--ice)" /><span class="wordmark">FalcoDash</span></a>
+    <form method="post" class="stack" style="--gap:16px;border:2px solid var(--line);padding:24px">
+      <label class="field"><span>Password</span><input class="input" type="password" name="password" autocomplete="current-password" required autofocus /></label>
+      {error && <p class="form-status" data-kind="error">{error}</p>}
+      <button class="btn btn-primary" type="submit" style="width:100%"><span>Sign in</span><span aria-hidden="true">→</span></button>
+    </form>
+    <p class="note">Blog editing lives at <a href="/admin/cms">/admin/cms</a> and uses GitHub sign-in.</p>
+  </div>
+</AdminLayout>

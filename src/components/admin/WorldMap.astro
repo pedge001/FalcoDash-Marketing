@@ -1,0 +1,19 @@
+---
+import { worldLand, projectWorld, WORLD_W, WORLD_H } from '~/lib/geo';
+import { int, countryName } from '~/lib/format';
+interface Props { cities: { city: string; region: string | null; country: string | null; lat: number | null; lon: number | null; value: number }[] }
+const { cities } = Astro.props;
+const maxCity = Math.max(1, ...cities.map((c) => c.value));
+const dots = cities
+  .filter((c) => c.lat != null && c.lon != null)
+  .map((c) => ({ ...c, p: projectWorld(c.lon!, c.lat!) }))
+  .filter((c) => c.p)
+  .sort((a, b) => b.value - a.value);
+---
+<svg class="map" viewBox={`0 0 ${WORLD_W} ${WORLD_H}`} role="img" aria-label="Visitors by city worldwide">
+  <path class="land" d={worldLand} />
+  {dots.map((c) => (
+    <circle class="dot" cx={c.p![0]} cy={c.p![1]} r={2.5 + 9 * Math.sqrt(c.value / maxCity)} data-tip={`${c.city}${c.region ? ', ' + c.region : ''}, ${countryName(c.country)}\n${int(c.value)} visitor${c.value === 1 ? '' : 's'}`} />
+  ))}
+</svg>
+<div class="legend-seq" aria-hidden="true"><span>Dots: cities, sized by visitors</span></div>

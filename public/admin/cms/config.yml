@@ -1,4 +1,4 @@
-# Decap CMS — FalcoDash blog. Served at falcodash.com/admin.
+# Decap CMS — FalcoDash blog. Served at falcodash.com/admin/cms.
 # Editors sign in with GitHub. Saving a post commits Markdown to src/content/blog/ on GitHub;
 # Railway rebuilds and redeploys the site from main automatically.
 
@@ -18,7 +18,7 @@ backend:
 # Drafts → In review → Ready, before anything goes live. Drafts live on PR branches, so they never deploy.
 publish_mode: editorial_workflow
 
-# For local editing without GitHub: run `npx decap-server` and `npm run dev`, then open localhost:4321/admin.
+# For local editing without GitHub: run `npx decap-server` and `npm run dev`, then open localhost:4321/admin/cms.
 local_backend: true
 
 site_url: https://falcodash.com

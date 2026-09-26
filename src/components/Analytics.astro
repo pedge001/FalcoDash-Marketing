@@ -39,3 +39,7 @@ const cfg = JSON.stringify({ ga4: ga4 || '', clarity: clarity || '' });
   </script>
 )}
 {cf && <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: cf })}></script>}
+<script>
+  import { initTracking } from '~/scripts/track';
+  initTracking();
+</script>

@@ -21,6 +21,8 @@ const { id = 'audit-form', source = Astro.url.pathname } = Astro.props;
     <input type="hidden" name="source" value={source} />
     <input type="hidden" name="t" value="" />
     <input type="hidden" name="utm" value="" />
+    <input type="hidden" name="sid" value="" />
+    <input type="hidden" name="vid" value="" />
     <button type="submit" class="btn btn-primary full"><span>Request my free audit</span><span aria-hidden="true">→</span></button>
     <p class="form-status full" role="status" aria-live="polite" hidden></p>
     <p class="form-note full">We reply within one business day. We never share your details. See our <a href="/privacy">privacy policy</a>.</p>

@@ -1,0 +1,29 @@
+---
+import { usStates, usBorders, projectUs, binner, SEQ, US_W, US_H } from '~/lib/geo';
+import { int } from '~/lib/format';
+interface Props { states: { code: string; name: string | null; value: number }[]; cities: { city: string; region: string | null; country: string | null; lat: number | null; lon: number | null; value: number }[] }
+const { states, cities } = Astro.props;
+const byCode = new Map(states.map((s) => [s.code, s.value]));
+const color = binner(states.map((s) => s.value));
+const maxCity = Math.max(1, ...cities.map((c) => c.value));
+const dots = cities
+  .filter((c) => c.country === 'US' && c.lat != null && c.lon != null)
+  .map((c) => ({ ...c, p: projectUs(c.lon!, c.lat!) }))
+  .filter((c) => c.p)
+  .sort((a, b) => b.value - a.value);
+const maxState = Math.max(0, ...states.map((s) => s.value));
+---
+<svg class="map" viewBox={`0 0 ${US_W} ${US_H}`} role="img" aria-label="Visitors by US state and city">
+  {usStates.map((s: { code: string; name: string; d: string }) => {
+    const v = byCode.get(s.code) ?? 0;
+    return <path class="st" d={s.d} fill={color(v) ?? '#111'} data-tip={`${s.name}\n${int(v)} visitor${v === 1 ? '' : 's'}`} />;
+  })}
+  <path d={usBorders} fill="none" stroke="#000" stroke-width="0.8" />
+  {dots.map((c) => (
+    <circle class="dot" cx={c.p![0]} cy={c.p![1]} r={3 + 11 * Math.sqrt(c.value / maxCity)} data-tip={`${c.city}${c.region ? ', ' + c.region : ''}\n${int(c.value)} visitor${c.value === 1 ? '' : 's'}`} />
+  ))}
+</svg>
+<div class="legend-seq" aria-hidden="true">
+  <span>Fewer</span><span class="sw">{SEQ.map((c) => <i style={`background:${c}`}></i>)}</span><span>More{maxState ? ` (max ${int(maxState)})` : ''}</span>
+  <span style="margin-left:auto">Dots: cities, sized by visitors</span>
+</div>

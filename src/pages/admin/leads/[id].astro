@@ -1,0 +1,66 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import { lead, updateLead, LEAD_STATUSES } from '~/lib/analytics';
+import { when, place, dur, flag } from '~/lib/format';
+export const prerender = false;
+const id = Astro.params.id ?? '';
+let saved = false;
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  saved = await updateLead(id, String(f.get('status') || ''), String(f.get('notes') || ''));
+  if (saved) return Astro.redirect(`/admin/leads/${id}?saved=1`, 303);
+}
+const data = await lead(id);
+if (!data) return new Response('Lead not found', { status: 404 });
+const { lead: l, journey } = data;
+const first = journey[0];
+const sessions = new Set(journey.map((j) => j.session_id)).size;
+const attr = Object.entries(l.attribution ?? {});
+---
+<AdminLayout title={l.name}>
+  <p style="margin:-12px 0 20px"><a href="/admin/leads" class="link-arrow">← All leads</a></p>
+  {Astro.url.searchParams.get('saved') && <p class="pill ice" style="margin-bottom:16px">Saved</p>}
+  <div class="lead-grid">
+    <div class="stack" style="--gap:24px">
+      <section class="panel">
+        <div class="panel-h"><h2>Request</h2><span class="meta">{when(l.created_at)}</span></div>
+        <p style="white-space:pre-wrap;font-size:16px;line-height:1.6">{l.message}</p>
+      </section>
+      <section class="panel">
+        <div class="panel-h"><h2>Journey before the request</h2><span class="meta">{journey.length} pages · {sessions} session{sessions === 1 ? '' : 's'}</span></div>
+        {journey.length === 0 ? <p class="empty">No browsing history linked (they may have submitted without JavaScript, or before tracking was live).</p> : (
+          <>
+            {first && <p class="note" style="margin-bottom:12px">First arrived {when(first.created_at)} via <strong style="color:var(--white)">{first.channel}</strong>{first.referrer_host ? ` (${first.referrer_host})` : ''}{first.utm_campaign ? `, campaign “${first.utm_campaign}”` : ''}, from {place(first.city, first.region, first.country)} on {first.device}.</p>}
+            <div class="scroll-x"><table class="tbl">
+              <thead><tr><th>When</th><th>Page</th><th>Channel</th><th class="n">Engaged</th></tr></thead>
+              <tbody>{journey.map((j) => <tr><td style="white-space:nowrap">{when(j.created_at)}</td><td>{j.path}</td><td>{j.channel}{j.referrer_host ? ` · ${j.referrer_host}` : ''}</td><td class="n">{j.engaged_ms ? dur(j.engaged_ms) : '—'}</td></tr>)}</tbody>
+            </table></div>
+          </>
+        )}
+      </section>
+    </div>
+    <div class="stack" style="--gap:24px">
+      <section class="panel">
+        <div class="panel-h"><h2>Contact</h2></div>
+        <dl class="kv" style="font-size:15px">
+          <dt>Email</dt><dd><a href={`mailto:${l.email}?subject=${encodeURIComponent('Your FalcoDash automation audit')}`}>{l.email}</a></dd>
+          {l.phone && <><dt>Phone</dt><dd><a href={`tel:${l.phone}`}>{l.phone}</a></dd></>}
+          <dt>Company</dt><dd>{l.company ?? '—'}</dd>
+          <dt>Industry</dt><dd>{l.industry ?? '—'}</dd>
+          <dt>Location</dt><dd>{flag(l.country)} {place(l.city, l.region, l.country)}</dd>
+          <dt>Form</dt><dd>{l.source ?? '—'}</dd>
+          {attr.map(([k, v]) => <><dt>{k}</dt><dd style="word-break:break-all">{v}</dd></>)}
+          <dt>Email alert</dt><dd>{l.notified_at ? `Sent ${when(l.notified_at)}` : l.notify_error ? `Failed: ${l.notify_error}` : 'Not sent'}</dd>
+        </dl>
+      </section>
+      <form method="post" class="panel stack" style="--gap:14px">
+        <div class="panel-h" style="margin:0"><h2>Pipeline</h2>{l.updated_at && <span class="meta">Updated {when(l.updated_at)}</span>}</div>
+        <label class="field"><span>Status</span>
+          <select class="input" name="status">{LEAD_STATUSES.map((s) => <option value={s} selected={s === l.status}>{s}</option>)}</select>
+        </label>
+        <label class="field"><span>Notes</span><textarea class="input" name="notes" rows="8">{l.notes ?? ''}</textarea></label>
+        <button class="btn btn-primary" type="submit"><span>Save</span><span aria-hidden="true">→</span></button>
+      </form>
+    </div>
+  </div>
+</AdminLayout>

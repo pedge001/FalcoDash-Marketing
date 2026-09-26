@@ -1,5 +1,6 @@
 import postgres from 'postgres';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 let sql: postgres.Sql | null = null;
 let ready: Promise<void> | null = null;
@@ -26,7 +27,7 @@ export async function ensureSchema() {
   const s = db();
   if (!s) return;
   ready ??= (async () => {
-    const ddl = readFileSync(new URL('../../db/schema.sql', `file://${process.cwd()}/`), 'utf8');
+    const ddl = readFileSync(join(process.cwd(), 'db/schema.sql'), 'utf8');
     await s.unsafe(ddl);
   })().catch((err) => {
     ready = null;

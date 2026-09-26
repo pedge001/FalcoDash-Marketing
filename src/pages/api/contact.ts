@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { createHash } from 'node:crypto';
 import { db, ensureSchema } from '~/lib/db';
 import { sendLeadConfirmation, sendLeadNotification, type Lead } from '~/lib/email';
 import { INDUSTRY_OPTIONS } from '~/data/site';
+import { clientIp, geoFrom, hashIp } from '~/lib/request';
 
 export const prerender = false;
 
@@ -12,27 +12,6 @@ const MAX_PER_HOUR = 5;
 const memHits = new Map<string, number[]>();
 
 const clip = (v: FormDataEntryValue | null, n: number) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
-
-// Behind Cloudflare the visitor's address arrives in cf-connecting-ip; x-forwarded-for is the fallback.
-function clientIp(request: Request, fallback?: string) {
-  const cf = request.headers.get('cf-connecting-ip');
-  if (cf) return cf.trim();
-  const fwd = request.headers.get('x-forwarded-for');
-  return (fwd ? fwd.split(',')[0].trim() : request.headers.get('x-real-ip')) || fallback || 'unknown';
-}
-
-function cfLocation(request: Request) {
-  const h = (k: string) => {
-    const v = request.headers.get(k);
-    if (!v) return null;
-    try { return decodeURIComponent(v).slice(0, 80); } catch { return v.slice(0, 80); }
-  };
-  const country = h('cf-ipcountry');
-  return { country: country && country !== 'XX' && country !== 'T1' ? country : null, region: h('cf-region'), city: h('cf-ipcity') };
-}
-
-const hashIp = (ip: string) =>
-  createHash('sha256').update(`${process.env.IP_HASH_SALT || 'falcodash'}:${ip}`).digest('hex').slice(0, 32);
 
 function parseAttribution(raw: string): Record<string, string> {
   try {
@@ -87,7 +66,10 @@ export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
   try { ip = clientIp(request, clientAddress); } catch { ip = clientIp(request); }
   const ipHash = hashIp(ip);
   const ua = (request.headers.get('user-agent') || '').slice(0, 400);
-  const loc = cfLocation(request);
+  const loc = geoFrom(request);
+  const idOk = (v: string) => (/^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : null);
+  const sessionId = idOk(clip(form.get('sid'), 64));
+  const visitorId = idOk(clip(form.get('vid'), 64));
   lead.location = [loc.city, loc.region, loc.country].filter(Boolean).join(', ') || undefined;
   const sql = db();
 
@@ -112,10 +94,10 @@ export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
   if (sql) {
     try {
       const [row] = await sql<{ id: string }[]>`
-        INSERT INTO leads (name, email, company, industry, phone, message, source, attribution, ip_hash, user_agent, country, region, city)
+        INSERT INTO leads (name, email, company, industry, phone, message, source, attribution, ip_hash, user_agent, country, region, city, session_id, visitor_id)
         VALUES (${lead.name}, ${lead.email}, ${lead.company ?? null}, ${lead.industry ?? null}, ${lead.phone ?? null},
                 ${lead.message}, ${lead.source ?? null}, ${sql.json(lead.attribution ?? {})}, ${ipHash}, ${ua},
-                ${loc.country}, ${loc.region}, ${loc.city})
+                ${loc.country}, ${loc.region}, ${loc.city}, ${sessionId}, ${visitorId})
         RETURNING id`;
       lead.id = row.id;
       stored = true;

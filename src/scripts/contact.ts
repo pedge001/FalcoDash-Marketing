@@ -34,6 +34,10 @@ export function initContactForms() {
         form.reportValidity();
         return;
       }
+      try {
+        (form.elements.namedItem('sid') as HTMLInputElement).value = sessionStorage.getItem('fd_sid') || '';
+        (form.elements.namedItem('vid') as HTMLInputElement).value = localStorage.getItem('fd_vid') || '';
+      } catch {}
       button.disabled = true;
       status.hidden = true;
       try {
@@ -49,6 +53,7 @@ export function initContactForms() {
         const w = window as any;
         w.gtag?.('event', 'generate_lead', { form_source: source });
         w.clarity?.('event', 'generate_lead');
+        w.__fdTrack?.('generate_lead', { form_source: source });
       } catch (err) {
         showError((err as Error).message);
       } finally {

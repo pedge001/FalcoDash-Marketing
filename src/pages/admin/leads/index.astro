@@ -1,0 +1,38 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import { leads, leadStatusCounts, LEAD_STATUSES } from '~/lib/analytics';
+import { when, place } from '~/lib/format';
+export const prerender = false;
+const status = Astro.url.searchParams.get('status') ?? '';
+const valid = (LEAD_STATUSES as readonly string[]).includes(status) ? status : '';
+const [rows, counts] = await Promise.all([leads({ status: valid || undefined, limit: 500 }), leadStatusCounts()]);
+const n = (s: string) => counts.find((c) => c.status === s)?.n ?? 0;
+const total = counts.filter((c) => c.status !== 'spam').reduce((a, c) => a + c.n, 0);
+---
+<AdminLayout title="Leads">
+  <nav class="tabs" aria-label="Status" style="flex-wrap:wrap;margin-bottom:20px">
+    <a href="/admin/leads" aria-current={!valid ? 'true' : undefined}>All ({total})</a>
+    {LEAD_STATUSES.map((s) => <a href={`/admin/leads?status=${s}`} aria-current={valid === s ? 'true' : undefined}>{s} ({n(s)})</a>)}
+  </nav>
+  <section class="panel">
+    {rows.length === 0 ? <p class="empty">No leads{valid ? ` with status “${valid}”` : ''}.</p> : (
+      <div class="scroll-x"><table class="tbl">
+        <thead><tr><th>When</th><th>Name</th><th>Email</th><th>Company</th><th>Industry</th><th>Location</th><th>Source</th><th>Status</th></tr></thead>
+        <tbody>
+          {rows.map((l) => (
+            <tr>
+              <td style="white-space:nowrap">{when(l.created_at)}</td>
+              <td><a href={`/admin/leads/${l.id}`}>{l.name}</a></td>
+              <td><a href={`mailto:${l.email}`}>{l.email}</a></td>
+              <td>{l.company ?? '—'}</td>
+              <td>{l.industry ?? '—'}</td>
+              <td>{place(l.city, l.region, l.country)}</td>
+              <td>{l.attribution?.utm_source ?? l.attribution?.referrer?.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] ?? l.source ?? '—'}</td>
+              <td><span class={`pill st-${l.status}`}>{l.status}</span>{l.notify_error && <span class="pill" title={l.notify_error} style="margin-left:6px;color:#ff8a7a;border-color:#ff8a7a">email failed</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table></div>
+    )}
+  </section>
+</AdminLayout>

@@ -1,0 +1,54 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import BarList from '~/components/admin/BarList.astro';
+import { parseRange, windowFor, crawlers, referrers } from '~/lib/analytics';
+import { int, ago } from '~/lib/format';
+export const prerender = false;
+const range = parseRange(Astro.url.searchParams.get('range'));
+const w = windowFor(range);
+const [cr, aiRefs] = await Promise.all([crawlers(w), referrers(w, 'AI', 15)]);
+const KIND: Record<string, string> = {
+  ai_user: 'Live fetch for a user',
+  ai_search: 'AI answer index',
+  ai_training: 'Model training',
+  search: 'Search index',
+  preview: 'Link preview',
+};
+---
+<AdminLayout title="AI & crawlers" range={range}>
+  <p class="note" style="margin:-8px 0 20px;max-width:760px">Crawlers don't run JavaScript, so the server logs them directly. “Live fetch” means an assistant such as ChatGPT or Claude opened your page because someone asked it a question: the strongest sign you're being cited. Bots identify themselves by user agent, which can be spoofed.</p>
+  <div class="panels" style="--min:320px">
+    <section class="panel">
+      <div class="panel-h"><h2>By type</h2><span class="meta">Requests</span></div>
+      <BarList rows={cr.kinds.map((r) => ({ label: KIND[r.label] ?? r.label, value: r.value }))} valueLabel="Hits" empty="No crawler requests logged yet." />
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Visits from AI answers</h2><span class="meta">Sessions</span></div>
+      <BarList rows={aiRefs.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Sessions" empty="No visits from AI assistants yet." />
+    </section>
+  </div>
+  <section class="panel" style="margin-bottom:24px">
+    <div class="panel-h"><h2>Crawlers</h2><span class="meta">{cr.bots.length} bots</span></div>
+    {cr.bots.length === 0 ? <p class="empty">No crawler requests logged in this range.</p> : (
+      <div class="scroll-x"><table class="tbl">
+        <thead><tr><th>Bot</th><th>Type</th><th class="n">Requests</th><th class="n">Pages</th><th>Last seen</th></tr></thead>
+        <tbody>{cr.bots.map((b) => <tr><td>{b.bot}</td><td><span class={`pill${b.kind.startsWith('ai_') ? ' ice' : ''}`}>{KIND[b.kind] ?? b.kind}</span></td><td class="n">{int(b.hits)}</td><td class="n">{int(b.pages)}</td><td>{ago(b.last)}</td></tr>)}</tbody>
+      </table></div>
+    )}
+  </section>
+  <div class="panels">
+    <section class="panel">
+      <div class="panel-h"><h2>Pages AI bots read most</h2></div>
+      <BarList rows={cr.paths.map((r) => ({ label: r.label, value: r.value, title: r.extra ?? '' }))} valueLabel="Hits" empty="No AI crawler requests yet." />
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Latest AI fetches</h2><span class="meta">Live + answer index</span></div>
+      {cr.recent.length === 0 ? <p class="empty">None yet.</p> : (
+        <div class="scroll-x"><table class="tbl">
+          <thead><tr><th>When</th><th>Bot</th><th>Page</th><th class="n">Status</th></tr></thead>
+          <tbody>{cr.recent.map((r) => <tr><td style="white-space:nowrap">{ago(r.created_at)}</td><td>{r.bot}</td><td>{r.path}</td><td class="n">{r.status}</td></tr>)}</tbody>
+        </table></div>
+      )}
+    </section>
+  </div>
+</AdminLayout>

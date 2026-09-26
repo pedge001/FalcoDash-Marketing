@@ -1,0 +1,35 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import { live } from '~/lib/analytics';
+import { int, ago, place, dur, flag } from '~/lib/format';
+export const prerender = false;
+const lv = await live();
+---
+<AdminLayout title="Live">
+  <div class="kpis" style="max-width:520px">
+    <div class="kpi"><span class="k"><span class="live-dot" aria-hidden="true"></span>Visitors, last 5 minutes</span><span class="v">{int(lv.now)}</span><span class="d">Refreshes every 15 seconds</span></div>
+  </div>
+  <section class="panel">
+    <div class="panel-h"><h2>Latest page views</h2><span class="meta">Most recent 60</span></div>
+    {lv.recent.length === 0 ? <p class="empty">No page views yet.</p> : (
+      <div class="scroll-x"><table class="tbl">
+        <thead><tr><th>When</th><th>Page</th><th>Location</th><th>Channel</th><th>Referrer</th><th>Device</th><th class="n">Engaged</th><th>Visitor</th></tr></thead>
+        <tbody>
+          {lv.recent.map((r) => (
+            <tr>
+              <td style="white-space:nowrap">{ago(r.created_at)}</td>
+              <td><a href={r.path} target="_blank" rel="noopener">{r.path}</a></td>
+              <td>{flag(r.country)} {place(r.city, r.region, r.country)}</td>
+              <td><span class={`pill${r.channel === 'AI' ? ' ice' : ''}`}>{r.channel}</span></td>
+              <td>{r.referrer_host ?? '—'}</td>
+              <td>{r.device} · {r.browser}</td>
+              <td class="n">{r.engaged_ms ? dur(r.engaged_ms) : '—'}</td>
+              <td><code style="font-size:12px;color:var(--muted)">{r.visitor_id.slice(0, 8)}</code></td>
+            </tr>
+          ))}
+        </tbody>
+      </table></div>
+    )}
+  </section>
+  <script>setTimeout(() => location.reload(), 15000);</script>
+</AdminLayout>

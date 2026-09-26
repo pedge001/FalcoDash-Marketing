@@ -12,7 +12,8 @@ Built with [Astro](https://astro.build) and deployed to Railway with Postgres (l
 | `server.mjs` | Production entry: security headers, cache headers, www → apex, legacy path redirects to app.falcodash.com |
 | Postgres (`postgres` driver) | Stores every audit request in `leads` (`db/schema.sql`) |
 | Resend | Emails each new lead to the team and sends the submitter a confirmation |
-| Decap CMS at `/admin` | Blog editing; commits Markdown to `src/content/blog/` on GitHub |
+| Admin panel at `/admin` | Your analytics, visitor map, AI crawler log and lead pipeline (password: `ADMIN_PASSWORD`) |
+| Decap CMS at `/admin/cms` | Blog editing; commits Markdown to `src/content/blog/` on GitHub |
 | satori + resvg | Generates a branded Open Graph image for every page at build time |
 
 ## Local development
@@ -43,6 +44,7 @@ Without `DATABASE_URL` or `RESEND_API_KEY` the form still validates, but a submi
    - `DATABASE_URL=${{Postgres.DATABASE_URL}}`
    - `RESEND_API_KEY`, `EMAIL_FROM`, `LEAD_NOTIFY_TO`
    - `IP_HASH_SALT` (any long random string)
+   - `ADMIN_PASSWORD` (for the admin panel)
    - `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET` (for the CMS, below)
 4. Under **Settings → Networking**, add `falcodash.com` and `www.falcodash.com` as custom domains and create the DNS records Railway shows you. `www` redirects to the apex automatically.
 5. In **Resend**, add and verify the `falcodash.com` domain (SPF/DKIM records) so mail can be sent from `hello@falcodash.com`.
@@ -60,9 +62,30 @@ FROM leads ORDER BY created_at DESC;
 
 `notify_error` is filled if the notification email failed, so nothing is lost during a Resend outage.
 
+## Admin panel
+
+**falcodash.com/admin**, signed in with the `ADMIN_PASSWORD` variable. Sessions last 30 days; 8 wrong passwords from one IP locks it for 15 minutes.
+
+| Page | Shows |
+| --- | --- |
+| Overview | Visitors now, KPIs vs the previous period, visitors over time, channels, top pages, US map, AI referrals and crawlers, latest leads |
+| Live | The last 60 page views with location, channel and device (refreshes every 15 s) |
+| Acquisition | Channels with leads attributed, referring sites, AI assistants, search engines, social, UTM campaigns, landing pages |
+| Audience & map | US state map and city dots, world map, countries, states, cities, devices, browsers, OS |
+| Content | Every page with visitors, views and engaged time; outbound clicks; audit CTA clicks; leads by form |
+| AI & crawlers | Which search and AI bots crawled which pages, live fetches by ChatGPT/Claude/Perplexity on behalf of users, visits from AI answers |
+| Leads | Pipeline (new → contacted → qualified → proposal → won/lost/spam) with notes, and each lead's browsing journey before they submitted |
+
+How the data is collected:
+
+- **Page views and events**: `src/scripts/track.ts` sends small beacons to `/api/collect`. No cookies; a random visitor ID lives in `localStorage` (none when the browser sends Global Privacy Control). Your own visits are skipped while you're signed in.
+- **Location**: from Cloudflare request headers. Country always comes through; for state, city and map dots turn on **Cloudflare → Rules → Managed Transforms → Add visitor location headers**.
+- **Channels**: set from UTM tags and the referrer on the first page of each session. `AI` covers ChatGPT, Perplexity, Claude, Gemini, Copilot and similar.
+- **Crawlers**: logged in `server.mjs`, because bots don't run JavaScript. Types: live fetch for a user, AI answer index, model training, search index, link preview.
+
 ## Blog (Decap CMS)
 
-Editors go to **falcodash.com/admin** and sign in with GitHub. Posts use the editorial workflow (Draft → In review → Ready). Publishing merges to `main`, and Railway redeploys.
+Editors go to **falcodash.com/admin/cms** (or the Blog CMS button in the panel) and sign in with GitHub. Posts use the editorial workflow (Draft → In review → Ready). Publishing merges to `main`, and Railway redeploys.
 
 One-time setup:
 
@@ -72,7 +95,7 @@ One-time setup:
 2. Put the client ID and a generated client secret in Railway as `GITHUB_OAUTH_CLIENT_ID` / `GITHUB_OAUTH_CLIENT_SECRET`.
 3. Each editor needs write access to this repository.
 
-Local editing without GitHub: run `npx decap-server` alongside `npm run dev` and open `localhost:4321/admin`.
+Local editing without GitHub: run `npx decap-server` alongside `npm run dev` and open `localhost:4321/admin/cms`.
 
 Posts are front matter only (see `src/content.config.ts`). Write the **title** as the question people search and the **short answer** as 2–4 sentences that answer it directly: that passage is what answer engines quote.
 
@@ -114,7 +137,8 @@ src/
   lib/           JSON-LD builders, blog helpers, OG images, llms.txt, DB, email
   scripts/       Client scripts (hero animation, contact form)
   assets/shots/  Work screenshots
-public/admin/    Decap CMS
+public/admin/cms Decap CMS
+src/pages/admin Admin panel (server-rendered, password protected)
 db/schema.sql    Database schema
 server.mjs       Production server
 ```

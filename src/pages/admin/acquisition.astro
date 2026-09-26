@@ -1,0 +1,45 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import BarList from '~/components/admin/BarList.astro';
+import { parseRange, windowFor, channels, referrers, campaigns, pages } from '~/lib/analytics';
+import { int, dur } from '~/lib/format';
+export const prerender = false;
+const range = parseRange(Astro.url.searchParams.get('range'));
+const w = windowFor(range);
+const [ch, refs, ai, search, social, camp, entry] = await Promise.all([
+  channels(w), referrers(w, undefined, 20), referrers(w, 'AI', 10), referrers(w, 'Search', 10), referrers(w, 'Social', 10), campaigns(w), pages(w, { entry: true, limit: 15 }),
+]);
+---
+<AdminLayout title="Acquisition" range={range}>
+  <div class="panels">
+    <section class="panel">
+      <div class="panel-h"><h2>Channels</h2><span class="meta">Sessions</span></div>
+      <BarList rows={ch.map((r) => ({ label: r.label, value: r.value, sub: r.leads ? String(r.leads) : '0' }))} valueLabel="Sessions" subLabel="Leads" />
+      <p class="note" style="margin-top:12px">Channel is set by the first page of each session. AI covers ChatGPT, Perplexity, Claude, Gemini, Copilot and similar.</p>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Referring sites</h2><span class="meta">Sessions</span></div>
+      <BarList rows={refs.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Sessions" empty="No referring sites in this range." />
+    </section>
+  </div>
+  <div class="panels" style="--min:320px">
+    <section class="panel"><div class="panel-h"><h2>AI assistants</h2></div><BarList rows={ai.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Sessions" empty="None yet." /></section>
+    <section class="panel"><div class="panel-h"><h2>Search engines</h2></div><BarList rows={search.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Sessions" empty="None yet." /></section>
+    <section class="panel"><div class="panel-h"><h2>Social</h2></div><BarList rows={social.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Sessions" empty="None yet." /></section>
+  </div>
+  <div class="panels">
+    <section class="panel">
+      <div class="panel-h"><h2>Campaigns (UTM)</h2><span class="meta">Sessions</span></div>
+      {camp.length === 0 ? <p class="empty">No tagged campaigns in this range. Add ?utm_source=…&utm_medium=…&utm_campaign=… to links you share.</p> : (
+        <div class="scroll-x"><table class="tbl">
+          <thead><tr><th>Source</th><th>Medium</th><th>Campaign</th><th class="n">Sessions</th></tr></thead>
+          <tbody>{camp.map((r) => <tr><td>{r.source ?? '—'}</td><td>{r.medium ?? '—'}</td><td>{r.campaign ?? '—'}</td><td class="n">{int(r.sessions)}</td></tr>)}</tbody>
+        </table></div>
+      )}
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Landing pages</h2><span class="meta">Entries</span></div>
+      <BarList rows={entry.map((r) => ({ label: r.label, value: r.value, sub: dur(r.engaged), href: r.label }))} subLabel="Engaged" />
+    </section>
+  </div>
+</AdminLayout>

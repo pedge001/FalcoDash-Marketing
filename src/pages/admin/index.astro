@@ -1,0 +1,90 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import Kpi from '~/components/admin/Kpi.astro';
+import BarList from '~/components/admin/BarList.astro';
+import TimeChart from '~/components/admin/TimeChart.astro';
+import UsMap from '~/components/admin/UsMap.astro';
+import { parseRange, windowFor, kpis, series, channels, pages, referrers, usStates, cities, crawlers, leads, live } from '~/lib/analytics';
+import { int, pct, dur, when, place } from '~/lib/format';
+import { db } from '~/lib/db';
+
+export const prerender = false;
+const range = parseRange(Astro.url.searchParams.get('range'));
+const w = windowFor(range);
+const configured = !!db();
+const [k, ts, ch, top, ai, st, ct, cr, recentLeads, lv] = configured
+  ? await Promise.all([kpis(w), series(w), channels(w), pages(w, { limit: 8 }), referrers(w, 'AI', 6), usStates(w), cities(w), crawlers(w), leads({ limit: 6 }), live()])
+  : [null, [], [], [], [], [], [], { bots: [], kinds: [], paths: [], recent: [] }, [], { now: 0, recent: [] }];
+const c = k?.cur, p = k?.prev;
+const conv = c && c.sessions ? c.leads / c.sessions : 0;
+const pconv = p && p.sessions ? p.leads / p.sessions : 0;
+const aiBots = cr.bots.filter((b) => b.kind.startsWith('ai_'));
+---
+<AdminLayout title="Overview" range={range}>
+  {!configured && <p class="panel" style="margin-bottom:24px">DATABASE_URL isn't set, so there's no data to show.</p>}
+
+  <div class="kpis">
+    <div class="kpi"><span class="k"><span class="live-dot" aria-hidden="true"></span>Right now</span><span class="v">{int(lv.now)}</span><span class="d"><a href="/admin/live" style="color:var(--ice)">Live view →</a></span></div>
+    <Kpi label="Visitors" value={int(c?.visitors)} cur={c?.visitors} prev={p?.visitors} />
+    <Kpi label="Sessions" value={int(c?.sessions)} cur={c?.sessions} prev={p?.sessions} />
+    <Kpi label="Page views" value={int(c?.pageviews)} cur={c?.pageviews} prev={p?.pageviews} />
+    <Kpi label="Engaged / session" value={dur(c?.engaged)} cur={c?.engaged ?? 0} prev={p?.engaged ?? 0} />
+    <Kpi label="Bounce rate" value={pct(c?.bounce)} cur={c?.bounce ?? 0} prev={p?.bounce ?? 0} invert />
+    <Kpi label="Leads" value={int(c?.leads)} cur={c?.leads} prev={p?.leads} />
+    <Kpi label="Lead rate" value={pct(conv, 1)} cur={conv} prev={pconv} note="Leads ÷ sessions" />
+  </div>
+
+  <section class="panel" style="margin-bottom:24px">
+    <div class="panel-h"><h2>Visitors</h2><span class="meta">Pacific time</span></div>
+    <TimeChart data={ts} bucket={w.bucket} />
+  </section>
+
+  <div class="panels">
+    <section class="panel">
+      <div class="panel-h"><h2>Channels</h2><a class="meta" href={`/admin/acquisition?range=${range}`}>Acquisition →</a></div>
+      <BarList rows={ch.map((r) => ({ label: r.label, value: r.value, sub: r.leads ? `${r.leads} lead${r.leads > 1 ? 's' : ''}` : '' }))} valueLabel="Sessions" subLabel="Leads" />
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Top pages</h2><a class="meta" href={`/admin/content?range=${range}`}>Content →</a></div>
+      <BarList rows={top.map((r) => ({ label: r.label, value: r.value, sub: dur(r.engaged), href: r.label }))} subLabel="Engaged" />
+    </section>
+  </div>
+
+  <div class="panels" style="--min:520px">
+    <section class="panel">
+      <div class="panel-h"><h2>Where visitors are</h2><a class="meta" href={`/admin/audience?range=${range}`}>Audience & map →</a></div>
+      <UsMap states={st} cities={ct} />
+    </section>
+    <section class="panel stack" style="--gap:20px">
+      <div>
+        <div class="panel-h"><h2>Visits from AI answers</h2><a class="meta" href={`/admin/ai?range=${range}`}>AI & crawlers →</a></div>
+        <BarList rows={ai.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Sessions" empty="No visits from ChatGPT, Perplexity, Claude, Gemini or Copilot yet." />
+      </div>
+      <div>
+        <div class="panel-h"><h2>AI crawlers</h2><span class="meta">Requests</span></div>
+        <BarList rows={aiBots.slice(0, 6).map((b) => ({ label: b.bot, value: b.hits, sub: b.kind.replace('ai_', '') }))} valueLabel="Hits" subLabel="Type" empty="No AI crawler requests logged in this range." />
+      </div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Latest leads</h2><a class="meta" href="/admin/leads">All leads →</a></div>
+    {recentLeads.length === 0 ? <p class="empty">No leads yet.</p> : (
+      <div class="scroll-x"><table class="tbl">
+        <thead><tr><th>When</th><th>Name</th><th>Company</th><th>Industry</th><th>Location</th><th>Status</th></tr></thead>
+        <tbody>
+          {recentLeads.map((l) => (
+            <tr>
+              <td style="white-space:nowrap">{when(l.created_at)}</td>
+              <td><a href={`/admin/leads/${l.id}`}>{l.name}</a></td>
+              <td>{l.company ?? '—'}</td>
+              <td>{l.industry ?? '—'}</td>
+              <td>{place(l.city, l.region, l.country)}</td>
+              <td><span class={`pill st-${l.status}`}>{l.status}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table></div>
+    )}
+  </section>
+</AdminLayout>

@@ -1,0 +1,38 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import BarList from '~/components/admin/BarList.astro';
+import UsMap from '~/components/admin/UsMap.astro';
+import WorldMap from '~/components/admin/WorldMap.astro';
+import { parseRange, windowFor, usStates, cities, breakdown } from '~/lib/analytics';
+import { countryName, flag, int } from '~/lib/format';
+export const prerender = false;
+const range = parseRange(Astro.url.searchParams.get('range'));
+const view = Astro.url.searchParams.get('map') === 'world' ? 'world' : 'us';
+const w = windowFor(range);
+const [st, ct, countries, devices, browsers, oses] = await Promise.all([
+  usStates(w), cities(w), breakdown(w, 'country', 20), breakdown(w, 'device'), breakdown(w, 'browser'), breakdown(w, 'os'),
+]);
+const tab = (v: string) => { const u = new URL(Astro.url); u.searchParams.set('map', v); return u.pathname + u.search; };
+const noCity = ct.length === 0 && countries.length > 0;
+---
+<AdminLayout title="Audience & map" range={range}>
+  <section class="panel" style="margin-bottom:24px">
+    <div class="panel-h">
+      <h2>Visitor locations</h2>
+      <nav class="tabs" aria-label="Map"><a href={tab('us')} aria-current={view === 'us' ? 'true' : undefined}>United States</a><a href={tab('world')} aria-current={view === 'world' ? 'true' : undefined}>World</a></nav>
+    </div>
+    {view === 'us' ? <UsMap states={st} cities={ct} /> : <WorldMap cities={ct} />}
+    {noCity && <p class="note" style="margin-top:10px">Only countries are coming through. Turn on Cloudflare → Rules → Managed Transforms → “Add visitor location headers” to get states, cities and map dots.</p>}
+  </section>
+  <div class="panels" style="--min:320px">
+    <section class="panel"><div class="panel-h"><h2>Countries</h2></div><BarList rows={countries.map((r) => ({ label: `${flag(r.label)} ${countryName(r.label)}`, value: r.value }))} /></section>
+    <section class="panel"><div class="panel-h"><h2>US states</h2></div><BarList rows={st.map((r) => ({ label: r.name ?? r.code, value: r.value }))} /></section>
+    <section class="panel"><div class="panel-h"><h2>Cities</h2></div><BarList rows={ct.slice(0, 20).map((r) => ({ label: `${r.city}${r.region ? ', ' + r.region : ''}`, value: r.value, title: `${r.city}, ${r.region ?? ''} ${countryName(r.country)}` }))} /></section>
+  </div>
+  <div class="panels" style="--min:320px">
+    <section class="panel"><div class="panel-h"><h2>Devices</h2></div><BarList rows={devices.map((r) => ({ label: r.label, value: r.value }))} /></section>
+    <section class="panel"><div class="panel-h"><h2>Browsers</h2></div><BarList rows={browsers.map((r) => ({ label: r.label, value: r.value }))} /></section>
+    <section class="panel"><div class="panel-h"><h2>Operating systems</h2></div><BarList rows={oses.map((r) => ({ label: r.label, value: r.value }))} /></section>
+  </div>
+  <p class="note">Location is approximate, from the visitor's IP address as reported by Cloudflare. {int(ct.length)} cities in this range.</p>
+</AdminLayout>

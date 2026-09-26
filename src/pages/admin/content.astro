@@ -1,0 +1,28 @@
+---
+import AdminLayout from '~/components/admin/AdminLayout.astro';
+import BarList from '~/components/admin/BarList.astro';
+import { parseRange, windowFor, pages, eventCounts } from '~/lib/analytics';
+import { int, dur } from '~/lib/format';
+export const prerender = false;
+const range = parseRange(Astro.url.searchParams.get('range'));
+const w = windowFor(range);
+const [all, outbound, cta, leadsBy] = await Promise.all([
+  pages(w, { limit: 50 }), eventCounts(w, 'outbound_click', 'url', 15), eventCounts(w, 'cta_click', 'text', 10), eventCounts(w, 'generate_lead', 'form_source', 10),
+]);
+---
+<AdminLayout title="Content" range={range}>
+  <section class="panel" style="margin-bottom:24px">
+    <div class="panel-h"><h2>Pages</h2><span class="meta">Top 50</span></div>
+    {all.length === 0 ? <p class="empty">No page views in this range.</p> : (
+      <div class="scroll-x"><table class="tbl">
+        <thead><tr><th>Page</th><th class="n">Visitors</th><th class="n">Page views</th><th class="n">Avg engaged</th></tr></thead>
+        <tbody>{all.map((r) => <tr><td><a href={r.label} target="_blank" rel="noopener">{r.label}</a></td><td class="n">{int(r.value)}</td><td class="n">{int(r.pageviews)}</td><td class="n">{dur(r.engaged)}</td></tr>)}</tbody>
+      </table></div>
+    )}
+  </section>
+  <div class="panels" style="--min:320px">
+    <section class="panel"><div class="panel-h"><h2>Outbound clicks</h2></div><BarList rows={outbound.map((r) => ({ label: r.label.replace(/^https?:\/\//, ''), value: r.value, title: r.label }))} valueLabel="Clicks" empty="No outbound clicks yet." /></section>
+    <section class="panel"><div class="panel-h"><h2>Audit CTA clicks</h2></div><BarList rows={cta.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Clicks" empty="No CTA clicks yet." /></section>
+    <section class="panel"><div class="panel-h"><h2>Leads by form</h2></div><BarList rows={leadsBy.map((r) => ({ label: r.label, value: r.value }))} valueLabel="Leads" empty="No form submissions yet." /></section>
+  </div>
+</AdminLayout>

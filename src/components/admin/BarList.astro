@@ -1,0 +1,22 @@
+---
+// A ranked list with proportional bars (one hue; magnitude only).
+import { int } from '~/lib/format';
+interface Row { label: string; value: number; sub?: string; href?: string; title?: string }
+interface Props { rows: Row[]; valueLabel?: string; subLabel?: string; labelHead?: string; empty?: string }
+const { rows, valueLabel = 'Visitors', subLabel, labelHead = '', empty = 'No data yet for this range.' } = Astro.props;
+const max = Math.max(1, ...rows.map((r) => r.value));
+---
+{rows.length === 0 ? <p class="empty">{empty}</p> : (
+  <>
+    <div class="bars-head"><span>{labelHead}</span><span style="display:flex;gap:14px">{subLabel && <span style="min-width:52px;text-align:right">{subLabel}</span>}<span>{valueLabel}</span></span></div>
+    <ul class="bars">
+      {rows.map((r) => (
+        <li>
+          <span class="fill" style={`width:${Math.max(1, (r.value / max) * 100)}%`}></span>
+          <span class="l" title={r.title ?? r.label}>{r.href ? <a href={r.href}>{r.label}</a> : r.label}</span>
+          <span class="r">{r.sub !== undefined && <span class="s">{r.sub}</span>}<span>{int(r.value)}</span></span>
+        </li>
+      ))}
+    </ul>
+  </>
+)}

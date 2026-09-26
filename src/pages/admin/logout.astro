@@ -1,0 +1,6 @@
+---
+import { destroySession } from '~/lib/auth';
+export const prerender = false;
+if (Astro.request.method === 'POST') await destroySession(Astro.cookies);
+return Astro.redirect('/admin/login', 303);
+---

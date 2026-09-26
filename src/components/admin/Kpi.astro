@@ -1,0 +1,16 @@
+---
+import { delta } from '~/lib/format';
+interface Props { label: string; value: string; cur?: number | null; prev?: number | null; invert?: boolean; note?: string }
+const { label, value, cur, prev, invert = false, note } = Astro.props;
+const d = cur !== undefined ? delta(cur, prev) : null;
+const good = d !== null && (invert ? d < 0 : d > 0);
+---
+<div class="kpi">
+  <span class="k">{label}</span>
+  <span class="v">{value}</span>
+  <span class="d">
+    {d === null ? (note ?? (cur !== undefined ? 'No prior data' : ' ')) : (
+      <><span class={good ? 'up' : d === 0 ? '' : 'down'}>{d > 0 ? '▲' : d < 0 ? '▼' : '•'} {Math.abs(d * 100).toFixed(0)}%</span> vs previous</>
+    )}
+  </span>
+</div>

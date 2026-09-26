@@ -2,6 +2,7 @@
 // response (including pre-rendered pages and assets) and to redirect www → apex.
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
+import postgres from 'postgres';
 
 process.env.ASTRO_NODE_AUTOSTART = 'disabled';
 const { handler } = await import('./dist/server/entry.mjs');
@@ -47,6 +48,41 @@ function cacheControl(path) {
   return 'public, max-age=0, must-revalidate';
 }
 
+// ---------- Crawler log ----------
+// Search engines and AI crawlers don't run JavaScript, so page requests from them are logged here.
+// kind: search = search index, ai_search = AI answer-engine index, ai_training = model training,
+// ai_user = fetched live because someone asked an AI assistant, preview = link previews.
+const BOTS = [
+  ['ChatGPT-User', 'ai_user'], ['Claude-User', 'ai_user'], ['Perplexity-User', 'ai_user'], ['MistralAI-User', 'ai_user'],
+  ['OAI-SearchBot', 'ai_search'], ['Claude-SearchBot', 'ai_search'], ['PerplexityBot', 'ai_search'], ['DuckAssistBot', 'ai_search'], ['YouBot', 'ai_search'],
+  ['GPTBot', 'ai_training'], ['ClaudeBot', 'ai_training'], ['anthropic-ai', 'ai_training'], ['CCBot', 'ai_training'], ['Bytespider', 'ai_training'],
+  ['Amazonbot', 'ai_training'], ['meta-externalagent', 'ai_training'], ['cohere-ai', 'ai_training'], ['Diffbot', 'ai_training'], ['Google-CloudVertexBot', 'ai_training'],
+  ['Googlebot', 'search'], ['bingbot', 'search'], ['Applebot', 'search'], ['DuckDuckBot', 'search'], ['YandexBot', 'search'], ['Baiduspider', 'search'], ['Slurp', 'search'],
+  ['LinkedInBot', 'preview'], ['facebookexternalhit', 'preview'], ['Twitterbot', 'preview'], ['Slackbot', 'preview'], ['Discordbot', 'preview'], ['WhatsApp', 'preview'],
+].map(([name, kind]) => ({ name, kind, re: new RegExp(name.replace(/[-]/g, '\\-'), 'i') }));
+
+const DB_URL = process.env.DATABASE_URL;
+const sql = DB_URL ? postgres(DB_URL, { max: 2, ssl: /railway\.internal|localhost|127\.0\.0\.1/.test(DB_URL) ? false : 'require', onnotice: () => {} }) : null;
+let hits = [];
+function logCrawler(req, res, path) {
+  if (!sql) return;
+  if (!/^\/(?!_astro\/|api\/|og\/|admin)([^.]*|.*\.(txt|xml))$/.test(path)) return;
+  const ua = String(req.headers['user-agent'] || '');
+  const bot = BOTS.find((b) => b.re.test(ua));
+  if (!bot) return;
+  const country = String(req.headers['cf-ipcountry'] || '').slice(0, 2) || null;
+  res.on('finish', () => {
+    hits.push({ bot: bot.name, kind: bot.kind, path: path.slice(0, 300), status: res.statusCode, country });
+    if (hits.length > 500) hits = hits.slice(-500);
+  });
+}
+setInterval(async () => {
+  if (!sql || !hits.length) return;
+  const batch = hits; hits = [];
+  try { await sql`INSERT INTO crawler_hits ${sql(batch, 'bot', 'kind', 'path', 'status', 'country')}`; }
+  catch (err) { console.error('[crawlers]', err.message); }
+}, 5000).unref();
+
 const server = http.createServer((req, res) => {
   const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().split(',')[0].trim().toLowerCase();
   const path = (req.url || '/').split('?')[0];
@@ -64,6 +100,7 @@ const server = http.createServer((req, res) => {
     return res.end(INDEXNOW_KEY);
   }
 
+  logCrawler(req, res, path);
   for (const [k, v] of Object.entries(SECURITY)) res.setHeader(k, v);
   // Keep the Railway test domain (and any other alias) out of search results.
   if (host && host.split(':')[0] !== CANONICAL_HOST && !/^(localhost|127\.0\.0\.1)$/.test(host.split(':')[0])) res.setHeader('X-Robots-Tag', 'noindex, nofollow');

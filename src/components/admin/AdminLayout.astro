@@ -1,0 +1,82 @@
+---
+import '~/styles/global.css';
+import '~/styles/admin.css';
+import Mark from '~/components/Mark.astro';
+import { RANGES, type RangeKey } from '~/lib/analytics';
+
+interface Props { title: string; range?: RangeKey; bare?: boolean }
+const { title, range, bare = false } = Astro.props;
+const path = Astro.url.pathname;
+const NAV = [
+  { href: '/admin', label: 'Overview' },
+  { href: '/admin/live', label: 'Live' },
+  { href: '/admin/acquisition', label: 'Acquisition' },
+  { href: '/admin/audience', label: 'Audience & map' },
+  { href: '/admin/content', label: 'Content' },
+  { href: '/admin/ai', label: 'AI & crawlers' },
+  { href: '/admin/leads', label: 'Leads' },
+];
+const current = (href: string) => (href === '/admin' ? path === '/admin' : path === href || path.startsWith(href + '/')) ? 'page' : undefined;
+const rangeHref = (k: string) => { const u = new URL(Astro.url); u.searchParams.set('range', k); return u.pathname + u.search; };
+---
+<!doctype html>
+<html lang="en-US" class="adm">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="color-scheme" content="dark" />
+  <title>{title} · FalcoDash Admin</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+</head>
+<body class="adm">
+  {!bare && (
+    <header class="adm-top">
+      <div class="adm-bar">
+        <a href="/admin" class="brand" style="margin:0"><Mark size={28} fill="var(--ice)" /><span class="wordmark">FalcoDash</span></a>
+        <span class="adm-tag">Admin</span>
+        <div class="adm-actions">
+          <a href="/" class="btn btn-outline btn-xs" target="_blank" rel="noopener"><span>View site</span><span aria-hidden="true">↗</span></a>
+          <a href="/admin/cms" class="btn btn-primary btn-xs"><span>Blog CMS</span><span aria-hidden="true">→</span></a>
+          <form method="post" action="/admin/logout" style="margin:0"><button class="btn btn-outline btn-xs" type="submit">Sign out</button></form>
+        </div>
+      </div>
+      <nav class="adm-nav" aria-label="Admin">
+        {NAV.map((n) => <a href={range && n.href !== '/admin/leads' ? `${n.href}?range=${range}` : n.href} aria-current={current(n.href)}>{n.label}</a>)}
+      </nav>
+    </header>
+  )}
+  <main class="adm-main">
+    <div class="adm-head">
+      <h1>{title}</h1>
+      {range && (
+        <nav class="ranges" aria-label="Date range">
+          {Object.entries(RANGES).map(([k, r]) => <a href={rangeHref(k)} aria-current={k === range ? 'true' : undefined}>{r.label}</a>)}
+        </nav>
+      )}
+    </div>
+    <slot />
+  </main>
+  <div class="tip" hidden></div>
+  <script>
+    // Hover tooltips for anything with data-tip (chart bars, map shapes, dots).
+    const tip = document.querySelector<HTMLElement>('.tip')!;
+    const show = (el: Element, x: number, y: number) => {
+      tip.textContent = el.getAttribute('data-tip');
+      tip.hidden = false;
+      const r = tip.getBoundingClientRect();
+      tip.style.left = Math.min(innerWidth - r.width - 8, x + 14) + 'px';
+      tip.style.top = Math.max(8, y - r.height - 12) + 'px';
+    };
+    document.addEventListener('pointermove', (e) => {
+      const el = (e.target as Element).closest?.('[data-tip]');
+      if (el) show(el, e.clientX, e.clientY); else tip.hidden = true;
+    });
+    document.addEventListener('focusin', (e) => {
+      const el = (e.target as Element).closest?.('[data-tip]');
+      if (el) { const r = el.getBoundingClientRect(); show(el, r.left + r.width / 2, r.top); }
+    });
+    document.addEventListener('focusout', () => (tip.hidden = true));
+  </script>
+</body>
+</html>
