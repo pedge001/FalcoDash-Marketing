@@ -65,6 +65,8 @@ const server = http.createServer((req, res) => {
   }
 
   for (const [k, v] of Object.entries(SECURITY)) res.setHeader(k, v);
+  // Keep the Railway test domain (and any other alias) out of search results.
+  if (host && host.split(':')[0] !== CANONICAL_HOST && !/^(localhost|127\.0\.0\.1)$/.test(host.split(':')[0])) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   const cc = cacheControl(path);
   const writeHead = res.writeHead;
   res.writeHead = function (...args) {
