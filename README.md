@@ -111,7 +111,13 @@ The Work cards and case-study pages show placeholders until screenshots are adde
 | `work-opz` | opz.falcodash.com |
 | `work-fieldyates` | fieldyates.com |
 
-Rebuild and they replace the placeholders, resized and converted to AVIF/WebP. Blog cover images are uploaded through the CMS (or placed in `public/images/blog/` and set as `cover` in the post).
+Rebuild and they replace the placeholders, resized and converted to AVIF/WebP.
+
+Screenshots that aren't 16:10 can be padded onto a 16:10 canvas in their own background color (no cropping, no upscaling):
+
+```bash
+node scripts/frame-shot.mjs ~/Downloads/notes.png work-notes
+``` Blog cover images are uploaded through the CMS (or placed in `public/images/blog/` and set as `cover` in the post).
 
 ## SEO and AEO
 

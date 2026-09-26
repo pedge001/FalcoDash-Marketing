@@ -20,7 +20,7 @@ const img = match?.[1].default;
 ---
 <div class={`shot ar-${ratio}`}>
   {img ? (
-    <Picture src={img} alt={alt} formats={['avif', 'webp']} widths={[480, 800, 1200, 1600].filter((w) => w <= img.width)} sizes={sizes} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} />
+    <Picture src={img} alt={alt} formats={['avif', 'webp']} widths={[...[480, 800, 1200, 1600].filter((w) => w < img.width), img.width]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} />
   ) : (
     <div class="shot-ph" role="img" aria-label={alt}><span>{label}</span></div>
   )}
