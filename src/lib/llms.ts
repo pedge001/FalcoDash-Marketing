@@ -32,6 +32,7 @@ ${WORK.map((w) => `- [${w.name}](${abs(`/work/${w.slug}`)}) (live at ${w.url}): 
 
 ## Company
 - [How we work](${abs('/how-we-work')}): Free audit, paid strategy session, fixed-scope build, optional managed automation retainer.
+- [Inland Empire](${abs('/inland-empire')}): AI workflows, assistants, automations and dashboards for businesses in Redlands, San Bernardino and Riverside counties.
 - [About](${abs('/about')}): Who FalcoDash is and who founded it.
 - [FAQ](${abs('/faq')}): Answers on cost, timelines, tools, data security and ownership.
 - [Contact](${abs('/contact')}): Request a free automation audit.

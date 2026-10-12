@@ -13,10 +13,14 @@ export const SITE = {
   email: 'hello@falcodash.com',
   phone: '+1-909-499-6997',
   phoneDisplay: '(909) 499-6997',
+  locality: 'Redlands',
   region: 'CA',
   regionName: 'California',
   country: 'US',
   areaServed: 'United States',
+  // Named regions for the Organization entity, so local search and the
+  // /inland-empire page agree with the Google Business Profile.
+  areasServed: ['Inland Empire, CA', 'San Bernardino County, CA', 'Riverside County, CA'],
   locationLine: 'Based in California. Serving clients across the United States.',
   locale: 'en_US',
   themeColor: '#000000',

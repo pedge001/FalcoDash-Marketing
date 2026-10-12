@@ -21,6 +21,7 @@ export async function allRoutes(): Promise<RouteEntry[]> {
     page('/work', 0.8),
     ...WORK.map((w) => page(`/work/${w.slug}`, 0.7)),
     page('/how-we-work', 0.8),
+    page('/inland-empire', 0.8),
     page('/about', 0.7),
     page('/faq', 0.7),
     page('/contact', 0.8),

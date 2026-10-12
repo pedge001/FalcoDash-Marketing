@@ -1,0 +1,235 @@
+---
+// Regional landing page for local search: "AI automation Inland Empire" and the
+// city/county variants around it. Copy follows the Inland Empire Landing Page
+// Copy doc. The services, work and step data come from the shared data files so
+// this page can't drift from the service pages it sends people to.
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import ContactForm from '~/components/ContactForm.astro';
+import FAQ from '~/components/FAQ.astro';
+import WorkCard from '~/components/WorkCard.astro';
+import { STEPS } from '~/data/engagement';
+import { workBySlug } from '~/data/work';
+import { SITE } from '~/data/site';
+import { faqPage } from '~/lib/schema';
+
+const title = 'AI Automation & Dashboards in the Inland Empire | FalcoDash';
+const description =
+  'Redlands-based AI automation firm. FalcoDash builds AI workflows, assistants, automations and custom dashboards for Inland Empire teams. Free audit.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Inland Empire', path: '/inland-empire' }];
+
+const SERVICE_ROWS = [
+  {
+    name: 'AI workflows',
+    href: '/services/ai-workflows',
+    body: 'Intake, document review, drafting and triage handled by AI, with a person approving anything that leaves the building. Built for offices drowning in PDFs, forms and email.',
+  },
+  {
+    name: 'AI assistants and agents',
+    href: '/services/ai-agents',
+    body: 'An assistant set up on your own documents, pricing and procedures, so your team gets answers specific to how you work instead of generic chatbot replies.',
+  },
+  {
+    name: 'Automations',
+    href: '/services/automation',
+    body: 'Lead routing, quote follow-up, reporting and data entry, connected across the tools you already pay for: your CRM, QuickBooks, Google Workspace or Microsoft 365.',
+  },
+  {
+    name: 'Custom dashboards',
+    href: '/services/dashboards',
+    body: 'One live view of the numbers that matter, built for owners and boards, not analysts. Ideal for seeing what your automations are actually saving.',
+  },
+  {
+    name: 'Managed automation',
+    href: '/services/managed-automation',
+    body: "A monthly retainer from a local team. We monitor, fix and improve what's running, so it keeps working after launch.",
+  },
+];
+
+// Logistics has no industry page yet, so it renders without a link rather than
+// pointing at a 404.
+const INDUSTRY_ROWS = [
+  {
+    name: 'Community associations and HOAs',
+    href: '/industries/associations',
+    body: 'Live financial dashboards, board-ready monthly reports, and reserve and delinquency tracking for associations and management companies.',
+  },
+  {
+    name: 'Real estate teams and brokerages',
+    href: '/industries/real-estate',
+    body: 'AI offer analysis and side-by-side comparison, lead routing and follow-up, and transaction deadline reminders, built by a licensed California Realtor.',
+  },
+  {
+    name: 'Logistics, warehousing and distribution',
+    href: null,
+    body: 'Automated intake of bills of lading, invoices and delivery paperwork, plus daily operations dashboards.',
+  },
+  {
+    name: 'Small and mid-size businesses',
+    href: '/industries/small-business',
+    body: 'Quote and invoice follow-up, inbox and support triage, and weekly KPI dashboards for owners.',
+  },
+  {
+    name: 'Non-profits and public agencies',
+    href: '/industries/non-profits',
+    body: 'Grant and board reporting, intake forms and case routing, and public data dashboards.',
+  },
+];
+
+const LOCAL_WORK = ['associations', 'notes', 'ca-campaign-finance']
+  .map((slug) => workBySlug(slug))
+  .filter((w): w is NonNullable<typeof w> => Boolean(w));
+
+const faqs = [
+  {
+    q: 'Are you actually local?',
+    a: 'Yes. FalcoDash is based in Redlands, CA, and works with businesses across the Inland Empire as well as clients nationwide.',
+  },
+  {
+    q: 'Do I need to replace my current software?',
+    a: 'No. We build on the CRM, accounting software, email and spreadsheets you already use, and add custom code only where they fall short.',
+  },
+  {
+    q: 'How much does AI automation cost?',
+    a: 'Packages start at $2,500/month. The final price depends on how many processes and systems are involved. Every project starts with a free audit, and you get a fixed scope and quote before any work begins.',
+  },
+  {
+    q: 'How long does a project take?',
+    a: 'A single automation is often live within a few weeks. Larger builds with several integrations take longer, and your proposal includes a timeline.',
+  },
+  {
+    q: 'Will AI send things to my customers without checking?',
+    a: 'Only if you decide it should. By default, anything going to a customer or the public waits for a person to approve it.',
+  },
+  {
+    q: 'Who owns what you build?',
+    a: 'You do. Code, data and accounts stay in your name, and every system ships with documentation and a handover session.',
+  },
+];
+
+const schema = [faqPage(faqs, '/inland-empire')];
+---
+
+<Base
+  title={title}
+  description={description}
+  path="/inland-empire"
+  breadcrumbs={crumbs}
+  schema={schema}
+  ogImage="/og/inland-empire.png"
+  ogImageAlt="FalcoDash: AI automation for Inland Empire teams"
+>
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <span class="label">Redlands, CA · Serving the Inland Empire</span>
+    <div class="page-head-grid">
+      <h1 class="display-sm">AI automation for Inland Empire teams</h1>
+      <p class="lede">
+        FalcoDash is a Redlands-based AI implementation firm. We build AI workflows, assistants and
+        automations that take the reading, sorting and re-keying off your team, plus live dashboards
+        that show what it's saving. Local, hands-on, and yours to own.
+      </p>
+    </div>
+    <div class="stack" style="--gap:16px;margin-top:40px">
+      <div style="display:flex;flex-wrap:wrap;gap:16px">
+        <a class="btn btn-primary" href="#audit"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
+        <a class="btn btn-outline" href="#local-work"><span>See local work</span><span aria-hidden="true">↓</span></a>
+      </div>
+      <p class="body">
+        Meet in person anywhere from Riverside to Redlands to Rancho Cucamonga. Reply within one
+        business day.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap section-tight">
+    <div style="max-width:900px">
+      <ShortAnswer
+        heading="Who does FalcoDash work with in the Inland Empire?"
+        text="FalcoDash is an AI implementation and automation firm based in Redlands, California. We build AI workflows, AI assistants, automations and custom dashboards for associations, real estate teams, logistics operations, small businesses and non-profits across San Bernardino and Riverside counties. Every engagement starts with a free automation audit."
+      />
+    </div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="services-h">
+    <div class="sec-head">
+      <h2 id="services-h" class="h2">AI services for Inland Empire businesses</h2>
+      <a class="meta" href="/services">All services →</a>
+    </div>
+    <p class="lede" style="margin-bottom:40px">
+      Most teams here don't need a big software project. They need the inbox sorted, the paperwork
+      read and the follow-ups sent, without hiring another person to do it. That's what we build.
+    </p>
+    {SERVICE_ROWS.map((s) => (
+      <div class="row">
+        <div class="stack" style="--gap:10px"><h3><a href={s.href}>{s.name}</a></h3></div>
+        <p class="body" style="font-size:18px;line-height:1.6;max-width:680px">{s.body}</p>
+      </div>
+    ))}
+  </section>
+
+  <section class="wrap section-tight" id="local-work" aria-labelledby="work-h">
+    <div class="sec-head">
+      <h2 id="work-h" class="h2">Built and running in Southern California</h2>
+      <a class="meta" href="/work">All work →</a>
+    </div>
+    <div class="grid-auto" style="--min:520px">
+      {LOCAL_WORK.map((w) => <WorkCard work={w} />)}
+    </div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="industries-h">
+    <div class="sec-head">
+      <h2 id="industries-h" class="h2">Who we work with across the Inland Empire</h2>
+      <a class="meta" href="/industries">All industries →</a>
+    </div>
+    {INDUSTRY_ROWS.map((i) => (
+      <div class="row">
+        <div class="stack" style="--gap:10px">
+          <h3>{i.href ? <a href={i.href}>{i.name}</a> : i.name}</h3>
+        </div>
+        <p class="body" style="font-size:18px;line-height:1.6;max-width:680px">{i.body}</p>
+      </div>
+    ))}
+    <p class="body" style="margin-top:32px;max-width:760px">
+      Serving Redlands, San Bernardino, Riverside, Loma Linda, Yucaipa, Highland, Fontana, Rancho
+      Cucamonga, Ontario, Corona, Temecula and the rest of the Inland Empire, plus clients across the
+      US.
+    </p>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="how-h">
+    <div class="sec-head">
+      <h2 id="how-h" class="h2">Audit. Build. Run.</h2>
+      <a class="meta" href="/how-we-work">How we work →</a>
+    </div>
+    {STEPS.map((s) => (
+      <div class="row">
+        <div class="stack" style="--gap:10px"><span class="label">{s.k}</span><h3>{s.h}</h3></div>
+        <p class="body" style="font-size:18px;line-height:1.6;max-width:680px">{s.p}</p>
+      </div>
+    ))}
+  </section>
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px">
+      <h2 id="faq-h" class="h2">Questions from Inland Empire businesses</h2>
+    </div>
+    <FAQ faqs={faqs} />
+  </section>
+
+  <section class="wrap section-tight split" id="audit" aria-labelledby="cta-h">
+    <div>
+      <h2 id="cta-h" class="h2">Tell us what's slowing your team down</h2>
+      <p class="lede" style="margin-top:24px">
+        Book a free automation audit with a Redlands-based team. We'll map how your work runs today
+        and show you what to automate first.
+      </p>
+      <p class="body" style="margin-top:24px">
+        <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>
+      </p>
+    </div>
+    <ContactForm id="inland-empire-audit" source="inland-empire" />
+  </section>
+</Base>

@@ -22,8 +22,11 @@ export function organization() {
     telephone: SITE.phone,
     slogan: SITE.tagline,
     description: SITE.description,
-    areaServed: { '@type': 'Country', name: SITE.areaServed },
-    address: { '@type': 'PostalAddress', addressRegion: SITE.region, addressCountry: SITE.country },
+    areaServed: [
+      ...SITE.areasServed.map((name) => ({ '@type': 'AdministrativeArea', name })),
+      { '@type': 'Country', name: SITE.areaServed },
+    ],
+    address: { '@type': 'PostalAddress', addressLocality: SITE.locality, addressRegion: SITE.region, addressCountry: SITE.country },
     knowsAbout: SITE.knowsAbout,
     founder: { '@id': FOUNDER_ID },
     contactPoint: {
