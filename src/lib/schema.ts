@@ -26,7 +26,7 @@ export function organization() {
       ...SITE.areasServed.map((name) => ({ '@type': 'AdministrativeArea', name })),
       { '@type': 'Country', name: SITE.areaServed },
     ],
-    address: { '@type': 'PostalAddress', addressLocality: SITE.locality, addressRegion: SITE.region, addressCountry: SITE.country },
+    address: { '@type': 'PostalAddress', streetAddress: SITE.street, addressLocality: SITE.locality, addressRegion: SITE.region, postalCode: SITE.postalCode, addressCountry: SITE.country },
     knowsAbout: SITE.knowsAbout,
     founder: { '@id': FOUNDER_ID },
     contactPoint: {

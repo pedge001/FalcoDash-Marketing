@@ -34,7 +34,8 @@ const year = new Date().getFullYear();
       <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>
       <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
       <a href={SITE.founder.linkedin} rel="me noopener">LinkedIn</a>
-      <span class="muted">California · Serving the US</span>
+      <address class="muted" style="font-style:normal;line-height:1.5">{SITE.street}<br />{SITE.locality}, {SITE.region} {SITE.postalCode}</address>
+      <span class="muted">Serving the Inland Empire &amp; the US</span>
     </div>
   </div>
   <div class="wrap footer-base">
