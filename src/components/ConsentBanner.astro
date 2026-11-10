@@ -1,0 +1,59 @@
+---
+// Shown only when consent is still pending and GPC is off. Hidden with CSS
+// for returning visitors / GPC so the banner does not flash before JS runs.
+---
+<div
+  id="fd-consent"
+  class="consent-banner"
+  data-consent-banner
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="fd-consent-title"
+  aria-describedby="fd-consent-copy"
+>
+  <div class="consent-inner wrap">
+    <div class="consent-copy">
+      <p id="fd-consent-title" class="consent-title">Cookies for measurement and advertising</p>
+      <p id="fd-consent-copy">We use Google Ads cookies (and Google Analytics, if a measurement ID is configured) to measure visits and conversions and to understand which ads led to those actions. Accept or decline. You can read the details in our <a href="/privacy">privacy policy</a>.</p>
+    </div>
+    <div class="consent-actions">
+      <button type="button" class="btn btn-primary" data-consent="accept">Accept</button>
+      <button type="button" class="btn btn-outline" data-consent="decline">Decline</button>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  html[data-fd-consent]:not([data-fd-consent='pending']) .consent-banner { display: none; }
+  .consent-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 80;
+    background: var(--surface);
+    border-top: 2px solid var(--ice);
+    padding: 18px 0;
+    color: var(--text-2);
+  }
+  .consent-inner {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .consent-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white);
+    margin: 0 0 6px;
+  }
+  .consent-copy p:last-child { margin: 0; font-size: 15px; line-height: 1.5; max-width: 720px; }
+  .consent-copy a { color: var(--ice); }
+  .consent-actions { display: flex; gap: 12px; flex: none; }
+  .consent-actions .btn { min-width: 0; padding: 12px 20px; }
+  @media (max-width: 720px) {
+    .consent-inner { flex-direction: column; align-items: stretch; gap: 16px; }
+    .consent-actions .btn { flex: 1; justify-content: center; }
+  }
+</style>

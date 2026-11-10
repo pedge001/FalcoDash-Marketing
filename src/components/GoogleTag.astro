@@ -1,0 +1,46 @@
+---
+// Google tag + Consent Mode v2 default (denied) before gtag.js loads.
+// IDs come from src/data/ads-conversions.ts (review sheet placeholders until real IDs exist).
+import { GOOGLE_ADS, isConfiguredTagId } from '~/data/ads-conversions';
+
+const adsId = GOOGLE_ADS.conversionId;
+const ga4Id = GOOGLE_ADS.ga4Id;
+const loadId = isConfiguredTagId(adsId) ? adsId : (isConfiguredTagId(ga4Id) ? ga4Id : adsId);
+const cfg = { adsId, ga4Id, loadId };
+---
+<script is:inline define:vars={{ cfg }}>
+  (function (c) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    var denied = {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied'
+    };
+    // Consent defaults must run before the gtag.js script is added.
+    gtag('consent', 'default', Object.assign({ wait_for_update: 500 }, denied));
+    var gpc = navigator.globalPrivacyControl === true;
+    var choice = null;
+    try { choice = localStorage.getItem('fd_cookie_consent'); } catch (e) {}
+    document.documentElement.dataset.fdConsent = gpc ? 'gpc' : (choice || 'pending');
+    if (gpc || choice === 'denied') gtag('consent', 'update', denied);
+    else if (choice === 'accepted' && !gpc) {
+      gtag('consent', 'update', {
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        analytics_storage: 'granted'
+      });
+    }
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(c.loadId);
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    if (c.adsId) gtag('config', c.adsId);
+    if (c.ga4Id && !/X{3,}/i.test(c.ga4Id)) {
+      gtag('config', c.ga4Id, { allow_google_signals: false, allow_ad_personalization_signals: false });
+    }
+  })(cfg);
+</script>
