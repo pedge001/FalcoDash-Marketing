@@ -1,0 +1,129 @@
+---
+// City page for "AI automation consultant Redlands" searches. Copy is written for Redlands
+// specifically (not a copy of /inland-empire) and only states facts already confirmed elsewhere on
+// the site: the office address and phone (src/data/site.ts), the service area, the founder's Realtor
+// license, the products, and in-person meetings (from the /inland-empire copy).
+//
+// TODO(confirm): can clients meet at the State St office, and if so by appointment only? If yes,
+//   add it to the "Do you meet in person?" answer and the office block.
+// TODO(confirm): office hours, if you want them shown (also add openingHours to the Organization).
+// TODO(confirm): parking or directions note for the office, if useful.
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import FAQ from '~/components/FAQ.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { SITE } from '~/data/site';
+import { faqPage } from '~/lib/schema';
+
+const path = '/redlands';
+const title = 'AI Automation Consultant in Redlands, CA | FalcoDash';
+const description =
+  'FalcoDash is an AI automation consultant in Redlands, CA. We plan and build AI workflows, automations and dashboards for Inland Empire businesses. Free audit.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Inland Empire', path: '/inland-empire' }, { name: 'Redlands', path }];
+
+const address = `${SITE.street}, ${SITE.locality}, ${SITE.region} ${SITE.postalCode}`;
+const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
+const USE_CASES = [
+  {
+    title: 'Real estate teams',
+    href: '/industries/real-estate',
+    body: 'When several offers land on a Redlands listing at once, OPZ reads each one and lays them side by side with net to seller calculated, so the agent reviews a comparison instead of building one. We also set up lead routing and transaction reminders. FalcoDash was founded by a licensed California Realtor.',
+  },
+  {
+    title: 'Community associations',
+    href: '/industries/associations',
+    body: 'Board members get a live view of operating cash, reserves, delinquencies and budget versus actual, pulled from the accounting system the association already uses. The monthly board report comes from the same numbers, so the manager stops assembling it by hand.',
+  },
+  {
+    title: 'Small and mid-size businesses',
+    href: '/industries/small-business',
+    body: 'Quotes that go out the same day, invoices that get followed up without anyone remembering to, and an inbox that sorts itself before the team opens it. Built on the software you already pay for, with one dashboard of the numbers you check every week.',
+  },
+];
+
+const faqs = [
+  {
+    q: 'Where is FalcoDash located?',
+    a: `Our office is at ${address}. Call ${SITE.phoneDisplay} or email ${SITE.email}.`,
+  },
+  {
+    q: 'Do you meet in person?',
+    a: 'Yes. We meet with clients in person across the Inland Empire, from Redlands to Riverside to Rancho Cucamonga, and work over video with clients elsewhere in the US.',
+  },
+  {
+    q: 'What area do you serve?',
+    a: 'Redlands and the rest of the Inland Empire, across San Bernardino and Riverside counties. We also work with clients anywhere in the United States.',
+  },
+  {
+    q: 'How do we get started?',
+    a: 'Request a [free automation audit](/free-audit). We reply within one business day, then spend one working session on how your team runs today and send you a written shortlist of what to automate first.',
+  },
+];
+
+const schema = [faqPage(faqs, path)];
+---
+<Base title={title} description={description} path={path} breadcrumbs={crumbs} schema={schema} ogImage="/og/redlands.png" ogImageAlt="FalcoDash: AI automation consultant in Redlands, CA">
+  <section class="wrap page-head">
+    <Breadcrumbs items={crumbs} />
+    <p class="eyebrow" style="margin-bottom:20px">Redlands, CA</p>
+    <h1 class="display-sm" style="max-width:1040px">AI automation consultant for Redlands and Inland Empire businesses.</h1>
+    <p class="lede">We look at how your team spends its week, tell you plainly which parts AI and automation can take over, and then build them. One local firm from the first conversation to the system you run every day.</p>
+    <div class="hero-actions" style="margin-top:32px">
+      <a href="/free-audit" class="btn btn-primary"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
+      <a href={`tel:${SITE.phone}`} class="btn btn-outline"><span>Call {SITE.phoneDisplay}</span><span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section class="wrap section-tight">
+    <div style="max-width:900px">
+      <ShortAnswer
+        heading="What does an AI automation consultant in Redlands do?"
+        text="An AI automation consultant finds the repetitive work in a business, such as re-keying data, chasing follow-ups and building the same reports, and recommends which parts AI and automation should handle. FalcoDash is based in Redlands, CA. We give that advice through a free audit, then design, build and maintain the systems for teams across the Inland Empire."
+      />
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" aria-labelledby="office-h">
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+      <h2 id="office-h" class="h2">Our Redlands office</h2>
+      <p class="body" style="font-size:18px;line-height:1.6;max-width:520px">Call, email or request an audit online. We reply within one business day.</p>
+    </div>
+    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px;--gap:12px;font-size:18px">
+      <address style="font-style:normal;line-height:1.5">{SITE.name}<br />{SITE.street}<br />{SITE.locality}, {SITE.region} {SITE.postalCode}</address>
+      <a href={`tel:${SITE.phone}`} style="color:var(--white);text-decoration:none">{SITE.phoneDisplay}</a>
+      <a href={`mailto:${SITE.email}`} style="color:var(--white);text-decoration:none">{SITE.email}</a>
+      <a href={mapUrl} class="link-arrow" rel="noopener">Open in Google Maps ↗</a>
+    </div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="uses-h">
+    <div class="sec-head"><h2 id="uses-h" class="h2">What we build for Redlands teams</h2><a href="/industries" class="meta">All industries →</a></div>
+    <div class="grid-cells cols-3">
+      {USE_CASES.map((u, i) => (
+        <a href={u.href} class="cell cell-tall">
+          <span class="num">{String(i + 1).padStart(2, '0')}</span>
+          <h3>{u.title}</h3>
+          <p>{u.body}</p>
+          <span class="more" aria-hidden="true">Learn more →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" aria-labelledby="start-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="start-h" class="h2">Advice first, then a build you own</h2></div>
+    <div class="prose" style="border-top:2px solid var(--white);padding-top:16px">
+      <p>Every engagement starts with a free audit. You leave with a written shortlist of what to automate first, whether or not you hire us to build it.</p>
+      <p>If you do, you get a fixed scope and quote before any work begins, and everything we build stays in your name: code, data and accounts. Read more about <a href="/how-we-work">how we work</a> or see what we serve across the wider <a href="/inland-empire">Inland Empire</a>.</p>
+    </div>
+  </section>
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions from Redlands businesses</h2></div>
+    <FAQ faqs={faqs} />
+  </section>
+
+  <CtaBand heading="Find out what your team could stop doing by hand." href="/free-audit" />
+</Base>

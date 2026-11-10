@@ -34,7 +34,7 @@ const schema = [
       <a href="/contact" class="btn btn-primary"><span>Get a free automation audit</span><span aria-hidden="true">→</span></a>
     </div>
   </section>
-  <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer text={ind.shortAnswer} /></div></section>
+  <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer heading={ind.question} text={ind.shortAnswer} /></div></section>
 
   <section class="wrap section-tight" aria-labelledby="uc-h">
     <div class="sec-head"><h2 id="uc-h" class="h2">What we build for {ind.name.toLowerCase()}</h2></div>
@@ -42,6 +42,31 @@ const schema = [
       {ind.useCases.map((u, i) => <div class="cell"><span class="num">{String(i + 1).padStart(2, '0')}</span><h3>{u.title}</h3><p>{u.body}</p></div>)}
     </div>
   </section>
+
+  {ind.firstProject && (
+    <section class="wrap section-tight" aria-labelledby="first-h">
+      <div class="sec-head"><h2 id="first-h" class="h2">What a first project looks like</h2><a href="/how-we-work" class="meta">How we work →</a></div>
+      <p class="lede" style="margin-bottom:24px">{ind.firstProject.intro}</p>
+      <ol style="list-style:none;margin:0;padding:0">
+        {ind.firstProject.steps.map((st) => (
+          <li class="row">
+            <div class="stack" style="--gap:10px"><span class="label">{st.when}</span><h3>{st.title}</h3></div>
+            <p class="body" style="font-size:18px;line-height:1.6;max-width:680px">{st.body}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="split mt-3">
+        <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+          <h3 class="h3">What we need from you</h3>
+          <ul class="ticks ticks-col" style="font-size:17px">{ind.firstProject.needs.map((n) => <li>{n}</li>)}</ul>
+        </div>
+        <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+          <h3 class="h3">What you get</h3>
+          <ul class="ticks ticks-col" style="font-size:17px">{ind.firstProject.gets.map((g) => <li>{g}</li>)}</ul>
+        </div>
+      </div>
+    </section>
+  )}
 
   {work.length > 0 && (
     <section class="wrap section-tight" aria-labelledby="work-h">

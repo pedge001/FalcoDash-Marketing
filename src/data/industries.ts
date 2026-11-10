@@ -7,6 +7,8 @@ export type Industry = {
   description: string;
   h1: string;
   shortAnswer: string;
+  /** Heading for the short-answer box; defaults to "Short answer". */
+  question?: string;
   /** Three quick wins shown on the home page list. */
   highlights: string[];
   useCases: { title: string; body: string }[];
@@ -14,7 +16,24 @@ export type Industry = {
   work: string[];
   blogCategory?: string;
   faqs: FAQ[];
+  /** "What a first project looks like": the timeline, what we need from you, what you get. */
+  firstProject?: {
+    intro: string;
+    steps: { when: string; title: string; body: string }[];
+    needs: string[];
+    gets: string[];
+  };
 };
+
+// Shared first-project timeline. Durations are only the ones the site already commits to
+// (one-session audit, fixed quote before building, first automation often live in a few weeks).
+// TODO(confirm): add typical week ranges per industry if you want to commit to them.
+const firstSteps = (build: string) => [
+  { when: 'Week 1 · Free', title: 'Automation audit', body: 'One working session on how reporting runs today: where the data lives, who builds what, and what takes the longest. You get a written shortlist of what to automate first.' },
+  { when: 'Before any build', title: 'Scope and fixed quote', body: 'A written scope for the first project, with the systems involved, a timeline and a fixed price. Nothing is built until you approve it.' },
+  { when: 'Build · often a few weeks', title: 'Build and test on your data', body: build },
+  { when: 'Launch', title: 'Handover', body: 'A runbook, a training session for your staff and access set up in your name. Keep us on a monthly retainer to run it, or run it yourselves.' },
+];
 
 export const INDUSTRIES: Industry[] = [
   {
@@ -24,8 +43,9 @@ export const INDUSTRIES: Industry[] = [
     description:
       'AI offer comparison, lead routing and transaction automation for real estate agents, teams and brokerages, built by a firm founded by a licensed Realtor.',
     h1: 'AI automation for real estate teams and brokerages.',
+    question: 'How do real estate teams use AI automation?',
     shortAnswer:
-      'Real estate teams use AI automation to compare offers, route and follow up with leads, and keep transactions on schedule. FalcoDash builds these systems for agents, teams and brokerages, including OPZ, our tool that turns a stack of offer PDFs into one side-by-side comparison with net to seller calculated.',
+      'Real estate teams use AI automation to compare offers, route and follow up with leads, and keep transactions on schedule. FalcoDash builds these systems for agents, teams and brokerages, including OPZ, our tool that turns a stack of offer PDFs into one side-by-side comparison with net to seller calculated. FalcoDash was founded by Patrick Edgett, a licensed California Realtor.',
     highlights: [
       'Offer analysis and side-by-side comparison',
       'Lead routing and follow-up',
@@ -41,9 +61,12 @@ export const INDUSTRIES: Industry[] = [
     work: ['opz'],
     blogCategory: 'Real estate',
     faqs: [
-      { q: 'Can AI compare real estate offers?', a: 'Yes. AI can read each offer document, pull out the key terms and lay them side by side with net to seller calculated. The agent reviews the result instead of building it by hand.' },
+      // TODO(confirm): add the DRE license number to the founder answer if you want it shown.
+      { q: 'Can AI compare real estate offers?', a: 'Yes. AI can read each offer document, pull out price, financing, contingencies, credits and timelines, and lay the offers side by side with net to seller calculated. That is what [OPZ](/work/opz) does. The agent reviews the comparison instead of building it by hand.' },
+      { q: 'What is OPZ?', a: 'OPZ is the FalcoDash tool that automates offer analysis and comparison for Realtors. Every figure links back to the page of the offer it came from, so the agent can check it before sharing it with the seller. See the [OPZ case study](/work/opz).' },
+      { q: 'Does FalcoDash understand real estate?', a: 'Yes. FalcoDash was founded by Patrick Edgett, a licensed California Realtor, and our real estate tools are built around how listings, offers and transactions actually run.' },
+      { q: 'Does the agent stay in control?', a: 'Yes. AI drafts and extracts; the agent reviews and approves anything that goes to a client, a seller or another agent.' },
       { q: 'Does this work with my brokerage’s CRM and transaction software?', a: 'In most cases, yes. We connect to the tools you already use and only add software when there is a gap.' },
-      { q: 'Does FalcoDash understand real estate?', a: 'Yes. FalcoDash’s founder is a licensed California Realtor, and our tools are built around how transactions actually run.' },
     ],
   },
   {
@@ -90,6 +113,22 @@ export const INDUSTRIES: Industry[] = [
     services: ['dashboards', 'automation', 'ai-agents', 'managed-automation'],
     work: ['associations'],
     blogCategory: 'Dashboards',
+    firstProject: {
+      intro: 'Most associations start with one board dashboard and the monthly report that comes from it.',
+      steps: firstSteps('We connect your accounting data, check every figure against your last statements, and build the dashboard and monthly board report. Your manager or treasurer reviews it before the board sees it.'),
+      needs: [
+        'Read-only access to your accounting system, or the monthly exports you already send the board.',
+        'Your current budget and most recent reserve study.',
+        'A copy of the board packet you send today.',
+        'One point person, usually the manager or treasurer, for questions.',
+      ],
+      gets: [
+        'A live dashboard of operating cash, reserves against the reserve study, delinquencies and budget versus actual.',
+        'The monthly board report, generated from the same data.',
+        'Access set per person for board members, managers and owners.',
+        'Documentation and a handover session, with code, data and accounts in the association’s name.',
+      ],
+    },
     faqs: [
       { q: 'What should an association board see on its financial dashboard?', a: 'Operating cash, reserve balance against the reserve study, delinquencies and budget versus actual, updated automatically from the accounting system.' },
       { q: 'Does the association need new accounting software?', a: 'No. The dashboard reads from the system you already use.' },
@@ -115,6 +154,22 @@ export const INDUSTRIES: Industry[] = [
     services: ['dashboards', 'automation', 'ai-workflows'],
     work: ['ca'],
     blogCategory: 'Non-profits',
+    firstProject: {
+      intro: 'Most non-profits start with the report that takes the most staff time, usually one funder’s grant report.',
+      steps: firstSteps('We connect your donor, accounting and program records into one dataset, then build the report in that funder’s format. Staff review every draft before it goes out.'),
+      needs: [
+        'Access to your donor database, accounting system and wherever program data is kept.',
+        'The reporting requirements or template from one or two funders.',
+        'Your rules for who may see donor and client information.',
+        'One staff point person for questions.',
+      ],
+      gets: [
+        'One clean, connected dataset of donations, restricted funds and program outcomes.',
+        'Reports drafted on schedule in each funder’s format, waiting for staff review.',
+        'A dashboard of the same numbers for staff and the board.',
+        'Documentation and a handover session, with data kept in accounts the organization owns.',
+      ],
+    },
     faqs: [
       { q: 'Is AI automation affordable for a small non-profit?', a: 'Projects are scoped to the budget. A free audit shows what fits and what pays back first.' },
       { q: 'Is donor and constituent data kept private?', a: 'Data stays in accounts the organization owns, with access limited by role and every automated action logged.' },

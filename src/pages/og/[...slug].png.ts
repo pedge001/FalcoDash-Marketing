@@ -18,6 +18,7 @@ export const getStaticPaths = (async () => {
     p('faq', 'FAQ', 'Questions, answered.'),
     p('contact', 'Free automation audit', "Tell us what's slowing your team down."),
     p('how-we-work', 'How we work', 'Audit. Build. Run.'),
+    p('redlands', 'Redlands, CA', 'AI automation consultant for Redlands and Inland Empire businesses.'),
     p('inland-empire', 'Redlands, CA · Inland Empire', 'AI automation for Inland Empire teams'),
     ...SERVICES.map((s) => p(`services/${s.slug}`, `Services — ${s.name}`, s.h1)),
     ...INDUSTRIES.map((i) => p(`industries/${i.slug}`, 'Industries', i.h1)),

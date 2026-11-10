@@ -55,7 +55,7 @@ export const SITE = {
 } as const;
 
 /** Bump when the marketing pages' content changes; used as <lastmod> for non-blog pages in the sitemap. */
-export const PAGES_UPDATED = '2026-09-25';
+export const PAGES_UPDATED = '2026-11-09';
 
 export const NAV = [
   { href: '/services', label: 'Services' },

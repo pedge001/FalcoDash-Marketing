@@ -8,8 +8,9 @@ import { CORE_FAQS, MORE_FAQS } from '~/data/faqs';
 import { STEPS, PRINCIPLES } from '~/data/engagement';
 import { getPosts, plain, formatDate, modified } from '~/lib/blog';
 import { abs } from '~/lib/schema';
+import { answerMarkdown } from '~/lib/richtext';
 
-const faqMd = (faqs: { q: string; a: string }[]) => faqs.map((f) => `**${f.q}**\n${f.a}`).join('\n\n');
+const faqMd = (faqs: { q: string; a: string }[]) => faqs.map((f) => `**${f.q}**\n${answerMarkdown(f.a, SITE.url)}`).join('\n\n');
 
 export async function llmsTxt() {
   const posts = await getPosts();
@@ -32,6 +33,7 @@ ${WORK.map((w) => `- [${w.name}](${abs(`/work/${w.slug}`)}) (live at ${w.url}): 
 
 ## Company
 - [How we work](${abs('/how-we-work')}): Free audit, paid strategy session, fixed-scope build, optional managed automation retainer.
+- [Redlands, CA](${abs('/redlands')}): AI automation consultant with an office at 127 E State St, Redlands, CA 92373; real estate, association and small-business automation; in-person meetings across the Inland Empire.
 - [Inland Empire](${abs('/inland-empire')}): AI workflows, assistants, automations and dashboards for businesses in Redlands, San Bernardino and Riverside counties.
 - [About](${abs('/about')}): Who FalcoDash is and who founded it.
 - [FAQ](${abs('/faq')}): Answers on cost, timelines, tools, data security and ownership.
@@ -57,7 +59,10 @@ export async function llmsFullTxt() {
     out.push(`## Service: ${s.name}\nURL: ${abs(`/services/${s.slug}`)}\n\n${s.question}\n${s.shortAnswer}\n\n### ${s.examplesHeading}\n${s.examples.map((e) => `- **${e.title}**: ${e.body}`).join('\n')}\n\n### ${s.stepsHeading}\n${s.steps.map((e, i) => `${i + 1}. **${e.title}**: ${e.body}`).join('\n')}\n\n### ${s.fitHeading}\n${s.fit.map((f) => `- ${f}`).join('\n')}\n\n### Questions\n${faqMd(s.faqs)}`);
   }
   for (const i of INDUSTRIES) {
-    out.push(`## Industry: ${i.name}\nURL: ${abs(`/industries/${i.slug}`)}\n\n${i.shortAnswer}\n\n${i.useCases.map((u) => `- **${u.title}**: ${u.body}`).join('\n')}\n\n### Questions\n${faqMd(i.faqs)}`);
+    const fp = i.firstProject
+      ? `\n\n### What a first project looks like\n${i.firstProject.intro}\n\n${i.firstProject.steps.map((st, n) => `${n + 1}. **${st.title}** (${st.when}): ${st.body}`).join('\n')}\n\nWhat we need from you:\n${i.firstProject.needs.map((x) => `- ${x}`).join('\n')}\n\nWhat you get:\n${i.firstProject.gets.map((x) => `- ${x}`).join('\n')}`
+      : '';
+    out.push(`## Industry: ${i.name}\nURL: ${abs(`/industries/${i.slug}`)}\n\n${i.shortAnswer}\n\n${i.useCases.map((u) => `- **${u.title}**: ${u.body}`).join('\n')}${fp}\n\n### Questions\n${faqMd(i.faqs)}`);
   }
   for (const w of WORK) {
     out.push(`## Product: ${w.name}\nURL: ${abs(`/work/${w.slug}`)} · Live at ${w.url}\n\n${w.shortAnswer}\n\nProblem: ${w.problem}\nAudience: ${w.audience}\n\nWhat we built:\n${w.built.map((b) => `- ${b}`).join('\n')}\n\n### Questions\n${faqMd(w.faqs)}`);

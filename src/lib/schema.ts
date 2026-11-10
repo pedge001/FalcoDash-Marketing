@@ -2,6 +2,7 @@
 // resolve one FalcoDash entity across the whole site.
 import { SITE } from '~/data/site';
 import type { FAQ } from '~/data/services';
+import { answerText } from '~/lib/richtext';
 
 export const ORG_ID = `${SITE.url}/#organization`;
 export const WEBSITE_ID = `${SITE.url}/#website`;
@@ -100,7 +101,7 @@ export function faqPage(faqs: FAQ[], path: string) {
     mainEntity: faqs.map((f) => ({
       '@type': 'Question',
       name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a },
+      acceptedAnswer: { '@type': 'Answer', text: answerText(f.a) },
     })),
   };
 }
