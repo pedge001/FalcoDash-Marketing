@@ -4,9 +4,10 @@
 // read 2026-11-09 PT. The sheet has placeholders only — no real Ads conversion
 // ID, no real conversion labels, and no GA4 measurement ID. Do not invent IDs.
 export const GOOGLE_ADS = {
-  conversionId: 'AW-XXXXXXXXX',
+  // Env wins over the file. Placeholders or empty values make the tag a no-op.
+  conversionId: (import.meta.env.PUBLIC_GOOGLE_ADS_ID || 'AW-XXXXXXXXX').trim(),
   // Empty: no G- measurement ID was on the sheet.
-  ga4Id: '',
+  ga4Id: (import.meta.env.PUBLIC_GA4_ID || '').trim(),
   labels: {
     // Secondary. Sheet placeholder send_to: AW-XXXXXXXXX/AR_CALCULATOR_COMPLETE_LABEL
     ar_calculator_completed: 'AR_CALCULATOR_COMPLETE_LABEL',
@@ -15,7 +16,7 @@ export const GOOGLE_ADS = {
     // tel: clicks. Sheet placeholder send_to: AW-XXXXXXXXX/WEBSITE_CALL_CLICK_LABEL
     tel_click: 'WEBSITE_CALL_CLICK_LABEL',
   },
-} as const;
+};
 
 export type AdsConversionEvent = keyof typeof GOOGLE_ADS.labels;
 

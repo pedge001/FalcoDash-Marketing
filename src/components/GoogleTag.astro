@@ -3,9 +3,10 @@
 // IDs come from src/data/ads-conversions.ts (review sheet placeholders until real IDs exist).
 import { GOOGLE_ADS, isConfiguredTagId } from '~/data/ads-conversions';
 
-const adsId = GOOGLE_ADS.conversionId;
-const ga4Id = GOOGLE_ADS.ga4Id;
-const loadId = isConfiguredTagId(adsId) ? adsId : (isConfiguredTagId(ga4Id) ? ga4Id : adsId);
+// No-op until a real ID exists: placeholders and empty values load nothing.
+const adsId = isConfiguredTagId(GOOGLE_ADS.conversionId) ? GOOGLE_ADS.conversionId : '';
+const ga4Id = isConfiguredTagId(GOOGLE_ADS.ga4Id) ? GOOGLE_ADS.ga4Id : '';
+const loadId = adsId || ga4Id;
 const cfg = { adsId, ga4Id, loadId };
 ---
 <script is:inline define:vars={{ cfg }}>
@@ -33,13 +34,14 @@ const cfg = { adsId, ga4Id, loadId };
         analytics_storage: 'granted'
       });
     }
+    if (!c.loadId) return;
     var s = document.createElement('script');
     s.async = true;
     s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(c.loadId);
     document.head.appendChild(s);
     gtag('js', new Date());
     if (c.adsId) gtag('config', c.adsId);
-    if (c.ga4Id && !/X{3,}/i.test(c.ga4Id)) {
+    if (c.ga4Id) {
       gtag('config', c.ga4Id, { allow_google_signals: false, allow_ad_personalization_signals: false });
     }
   })(cfg);

@@ -1,13 +1,15 @@
 // Fires Google Ads conversion events when gtag or dataLayer is already present.
 // No-ops when they are absent. Does not inject any tag snippet.
-import { adsSendTo, type AdsConversionEvent } from '~/data/ads-conversions';
+import { adsSendTo, GOOGLE_ADS, isConfiguredTagId, type AdsConversionEvent } from '~/data/ads-conversions';
 
 export function fireAdsEvent(eventName: AdsConversionEvent, params: Record<string, string> = {}) {
   try {
     const w = window as any;
     const send_to = adsSendTo(eventName);
+    const label = GOOGLE_ADS.labels[eventName] || '';
+    const ready = isConfiguredTagId(GOOGLE_ADS.conversionId) && !!label && !/_LABEL$/.test(label);
     if (typeof w.gtag === 'function') {
-      w.gtag('event', 'conversion', { send_to });
+      if (ready) w.gtag('event', 'conversion', { send_to });
       w.gtag('event', eventName, params);
     }
     if (Array.isArray(w.dataLayer)) {
