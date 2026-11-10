@@ -1,9 +1,8 @@
-// AR calculator for /cash-flow-fix. Runs entirely in the browser and stores nothing: no network
-// calls with the numbers, no localStorage. Only an anonymous "used the calculator" event (with the
-// revenue range, never the amounts) goes to analytics.
-import { REVENUE_RANGES } from '~/data/cashflow';
-
-const UNDER_2M = REVENUE_RANGES[0].label;
+// AR calculator for /cash-flow-fix.
+// Formula (shown on the page): cash tied up = monthly revenue ÷ 30 × average days to get paid.
+// The visitor sees the figure in the browser, then submits an email to get the results.
+// Calculator inputs are not sent until that email form is submitted (via /api/contact).
+import { cashTiedUp } from '~/data/cashflow';
 
 type Parsed = { value: number | null; error?: string };
 
@@ -29,7 +28,6 @@ function parseDays(raw: string): Parsed {
 const usd = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
 const groupDigits = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 
-/** Adds thousands separators when a money field loses focus. */
 function attachMoneyFormatting(root: ParentNode) {
   root.querySelectorAll<HTMLInputElement>('input[data-money]').forEach((input) => {
     input.addEventListener('blur', () => {
@@ -49,115 +47,45 @@ function setError(input: HTMLInputElement | HTMLSelectElement, msg?: string) {
 
 export function initArCalculator() {
   attachMoneyFormatting(document);
-  initIntakeChecks();
 
   const root = document.querySelector<HTMLElement>('[data-ar-calc]');
   if (!root || root.dataset.ready) return;
   root.dataset.ready = '1';
 
   const q = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
-  const revenue = q<HTMLSelectElement>('[data-calc="revenue"]');
-  const open = q<HTMLInputElement>('[data-calc="open"]');
-  const ar90 = q<HTMLInputElement>('[data-calc="ar90"]');
+  const revenue = q<HTMLInputElement>('[data-calc="monthly"]');
   const days = q<HTMLInputElement>('[data-calc="days"]');
-  const out = {
-    ar90: q<HTMLElement>('[data-out="ar90"]'),
-    half: q<HTMLElement>('[data-out="half"]'),
-    dso: q<HTMLElement>('[data-out="dso"]'),
-    dsoNote: q<HTMLElement>('[data-out="dso-note"]'),
-  };
-  const cta = q<HTMLAnchorElement>('[data-calc-cta]');
-  const ctaLabel = q<HTMLElement>('[data-cta-label]');
-  const dsoNoteDefault = out.dsoNote.textContent || '';
-
-  let tracked = false;
-  let state = { revenue: '', open: null as number | null, ar90: null as number | null, days: null as number | null };
+  const out = q<HTMLElement>('[data-out="tied"]');
+  const emailStep = q<HTMLElement>('[data-email-step]');
+  const monthlyField = q<HTMLInputElement>('[data-sync="monthly_revenue"]');
+  const daysField = q<HTMLInputElement>('[data-sync="days_to_paid"]');
+  const tiedField = q<HTMLInputElement>('[data-sync="cash_tied_up"]');
 
   const render = () => {
-    const o = parseMoney(open.value);
-    const a = parseMoney(ar90.value);
+    const r = parseMoney(revenue.value);
     const d = parseDays(days.value);
-    const range = REVENUE_RANGES.find((r) => r.label === revenue.value);
-
-    setError(open, o.error);
-    let aErr = a.error;
-    if (!aErr && a.value !== null && o.value !== null && a.value > o.value) aErr = "AR over 90 days can't be more than total open AR.";
-    setError(ar90, aErr);
+    setError(revenue, r.error);
     setError(days, d.error);
-
-    const openOk = o.value !== null && !o.error ? o.value : null;
-    const ar90Ok = a.value !== null && !aErr ? a.value : null;
-    state = { revenue: range?.label ?? '', open: openOk, ar90: ar90Ok, days: d.error ? null : d.value };
-
-    out.ar90.textContent = ar90Ok !== null ? usd(ar90Ok) : '—';
-    out.half.textContent = openOk !== null ? usd(openOk * 0.5) : '—';
-    if (openOk !== null && range) {
-      const dso = openOk / (range.mid / 365);
-      out.dso.textContent = `${Math.round(dso).toLocaleString('en-US')} days`;
-      out.dsoNote.textContent = `An estimate based on the ${range.label} range, using ${usd(range.mid)} a year.`;
-    } else {
-      out.dso.textContent = '—';
-      out.dsoNote.textContent = range ? dsoNoteDefault : 'Choose your revenue range to see this estimate.';
+    const ready = r.value !== null && !r.error && d.value !== null && !d.error;
+    if (!ready) {
+      out.textContent = '—';
+      emailStep.hidden = true;
+      if (monthlyField) monthlyField.value = '';
+      if (daysField) daysField.value = '';
+      if (tiedField) tiedField.value = '';
+      return;
     }
-
-    // Under $2M still gets results, with a softer call to action.
-    ctaLabel.textContent = range?.label === UNDER_2M ? ctaLabel.dataset.soft! : ctaLabel.dataset.full!;
-
-    if (!tracked && openOk !== null && range) {
-      tracked = true;
-      const w = window as any;
-      w.__fdTrack?.('ar_calculator_used', { revenue: range.label });
-      w.gtag?.('event', 'ar_calculator_used', { revenue_range: range.label });
-      w.clarity?.('event', 'ar_calculator_used');
-    }
+    const tied = cashTiedUp(r.value!, d.value!);
+    out.textContent = usd(tied);
+    emailStep.hidden = false;
+    if (monthlyField) monthlyField.value = String(r.value);
+    if (daysField) daysField.value = String(d.value);
+    if (tiedField) tiedField.value = String(Math.round(tied));
   };
 
-  [revenue, open, ar90, days].forEach((el) => {
+  [revenue, days].forEach((el) => {
     el.addEventListener('input', render);
     el.addEventListener('change', render);
   });
   render();
-
-  // Carry the calculator's numbers into the intake form, then let the anchor scroll to it.
-  cta.addEventListener('click', () => {
-    const form = document.querySelector<HTMLFormElement>('form[data-intake-form]');
-    if (!form) return;
-    const set = (name: string, value: string) => {
-      const el = form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
-      if (el && value) { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }
-    };
-    if (state.revenue) set('revenue', state.revenue);
-    if (state.open !== null) set('open_ar', groupDigits(state.open));
-    if (state.ar90 !== null) set('ar_over_90', groupDigits(state.ar90));
-    if (state.days !== null) set('calc_days', String(state.days));
-
-    const w = window as any;
-    w.__fdTrack?.('cta_click', { text: (ctaLabel.textContent || '').slice(0, 60), from: 'ar_calculator' });
-
-    // Focus the first required question still empty, after the smooth scroll starts.
-    const first = Array.from(form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[required]')).find((el) => !el.value);
-    if (first) setTimeout(() => first.focus({ preventScroll: true }), 400);
-  });
-
-  // Hero and header buttons that jump within the page.
-  document.querySelectorAll<HTMLAnchorElement>('a[data-cta], .site-header a[href="#intake"]').forEach((a) => {
-    a.addEventListener('click', () => {
-      (window as any).__fdTrack?.('cta_click', { text: (a.textContent || '').trim().slice(0, 60), from: a.dataset.cta || 'header' });
-    });
-  });
-}
-
-/** Intake form: AR over 90 days can't exceed total open AR (the server checks this too). */
-function initIntakeChecks() {
-  const form = document.querySelector<HTMLFormElement>('form[data-intake-form]');
-  if (!form) return;
-  const open = form.elements.namedItem('open_ar') as HTMLInputElement;
-  const ar90 = form.elements.namedItem('ar_over_90') as HTMLInputElement;
-  const check = () => {
-    const o = parseMoney(open.value).value;
-    const a = parseMoney(ar90.value).value;
-    ar90.setCustomValidity(o !== null && a !== null && a > o ? "AR over 90 days can't be more than total open AR." : '');
-  };
-  open.addEventListener('input', check);
-  ar90.addEventListener('input', check);
 }

@@ -3,12 +3,13 @@
 // claim on this page is one Patrick confirmed. Anything not yet confirmed shows as a visible
 // [need: ...] placeholder (styled .need) instead of invented copy. Remove each one before launch.
 //
-// Flow: hero -> open AR calculator (no email gate, runs in the browser, stores nothing) -> proof ->
-// what's included -> guarantee -> price and steps -> intake form -> booking step after submit.
-// The intake posts to the existing /api/contact handler with source=cash-flow-fix.
+// Flow: hero (default headline server-rendered; ?ag= swaps client-side) -> AR calculator
+// (monthly revenue + days to get paid, formula on the page) -> email to get the results
+// (posts to /api/contact, source=cash-flow-fix) -> booking step after submit.
+// Money-back terms and the 2024 architecture-firm proof sit directly under the headline.
 import Base from '~/layouts/Base.astro';
 import { SITE } from '~/data/site';
-import { OFFER, PROOF, REVENUE_RANGES, STUCK_OPTIONS } from '~/data/cashflow';
+import { OFFER, PROOF, HEADLINES, AR_FORMULA } from '~/data/cashflow';
 import { abs, ORG_ID } from '~/lib/schema';
 
 const path = OFFER.path;
@@ -71,18 +72,19 @@ const schema = [
   schema={schema}
   ogImage="/og/cash-flow-fix.png"
   ogImageAlt="FalcoDash: 90 Day Cash Flow Fix. Faster cash in 90 days."
-  headerCta={{ href: '#intake', label: 'Book a 20-minute call' }}
+  headerCta={{ href: '#calculator', label: 'See cash tied up in your AR' }}
 >
   <!-- 1. Hero -->
   <section class="wrap cff-hero">
     <div class="hero-grid">
       <div>
         <p class="eyebrow">{OFFER.name} · Southern California</p>
-        <h1 class="display hero-h">Faster cash in <span class="butter">90 days.</span></h1>
+        <h1 class="display hero-h" data-headline data-ag="default">Faster cash in <span class="butter">90 days.</span></h1>
         <p class="lede hero-lede" data-answer>{subhead}</p>
+        <p class="hero-terms">If AR isn't down by day 90, we keep working until it is or you get a full refund — your choice.</p>
+        <p class="hero-proof">In 2024, an architecture firm's cash in the bank rose 35% in a 90-day engagement, and its AR was cut in half.</p>
         <div class="hero-actions">
-          <a href="#calculator" class="btn btn-primary" data-cta="hero-calculator"><span>See what your AR is costing you</span><span aria-hidden="true">↓</span></a>
-          <a href="#intake" class="btn btn-outline" data-cta="hero-call"><span>Book a 20-minute call</span><span aria-hidden="true">→</span></a>
+          <a href="#calculator" class="btn btn-primary" data-cta="hero-calculator"><span>See cash tied up in your AR</span><span aria-hidden="true">↓</span></a>
         </div>
       </div>
       <aside class="seal" aria-label="The guarantee">
@@ -97,63 +99,73 @@ const schema = [
       <li><span class="facts-k">Starts with</span>Invoicing and accounts receivable</li>
       <li><span class="facts-k">Based in</span>Redlands, CA</li>
     </ul>
+    <!-- Headline variants for ?ag= are listed here so they remain in the HTML if JS is off. The H1 above is the default (server-rendered). -->
+    <ul class="sr-only" id="cff-headlines">
+      <li>Default: {HEADLINES.default}</li>
+      <li>ag=paid-faster: {HEADLINES['paid-faster']}</li>
+      <li>ag=ar-collections: {HEADLINES['ar-collections']}</li>
+    </ul>
   </section>
 
-  <!-- 2. AR calculator -->
+  <!-- 2. AR calculator (first step) -->
   <section id="calculator" class="wrap section-tight" aria-labelledby="calc-h">
     <div class="sec-head">
       <h2 id="calc-h" class="h2">What is your AR costing you?</h2>
-      <span class="meta">AR calculator</span>
+      <span class="meta">Step 1 of 2 · AR calculator</span>
     </div>
-    <p class="calc-intro">Free to use, with no email needed. It runs in your browser, and nothing you type is stored or sent.</p>
+    <p class="calc-intro">Enter your monthly revenue and how long it takes to get paid. You will see the cash tied up in AR, then enter your email to get the results. The 20-minute call comes after that.</p>
 
     <div class="calc" data-ar-calc>
       <form class="calc-inputs" novalidate aria-label="Your numbers" onsubmit="return false">
         <label class="field">
-          <span>Annual revenue range</span>
-          <select class="input" name="revenue" data-calc="revenue">
-            <option value="">Choose a range</option>
-            {REVENUE_RANGES.map((r) => <option value={r.label} data-mid={r.mid}>{r.label}</option>)}
-          </select>
+          <span>Monthly revenue</span>
+          <span class="money"><span aria-hidden="true">$</span><input class="input" name="monthly_revenue" inputmode="decimal" autocomplete="off" placeholder="0" data-calc="monthly" data-money aria-describedby="calc-monthly-err" /></span>
+          <span class="field-err" id="calc-monthly-err" hidden></span>
         </label>
         <label class="field">
-          <span>Total open AR</span>
-          <span class="money"><span aria-hidden="true">$</span><input class="input" name="open_ar" inputmode="decimal" autocomplete="off" placeholder="0" data-calc="open" data-money aria-describedby="calc-open-err" /></span>
-          <span class="field-err" id="calc-open-err" hidden></span>
-        </label>
-        <label class="field">
-          <span>AR over 90 days</span>
-          <span class="money"><span aria-hidden="true">$</span><input class="input" name="ar_over_90" inputmode="decimal" autocomplete="off" placeholder="0" data-calc="ar90" data-money aria-describedby="calc-ar90-err" /></span>
-          <span class="field-err" id="calc-ar90-err" hidden></span>
-        </label>
-        <label class="field">
-          <span>Average days from invoice to paid</span>
+          <span>Average days to get paid</span>
           <input class="input" name="days" type="number" min="0" max="3650" step="1" inputmode="numeric" placeholder="0" data-calc="days" aria-describedby="calc-days-err" />
           <span class="field-err" id="calc-days-err" hidden></span>
         </label>
-        <p class="calc-how">How the estimate works: days of revenue sitting unpaid is your total open AR divided by a day of revenue (annual revenue ÷ 365), using the midpoint of your range.</p>
+        <p class="calc-how">{AR_FORMULA}</p>
       </form>
 
       <div class="calc-out" aria-live="polite">
-        <div class="out-row">
-          <p class="out-k">Cash tied up in AR over 90 days</p>
-          <p class="out-v" data-out="ar90">—</p>
-        </div>
         <div class="out-row out-main">
-          <p class="out-k">If you cut AR in half</p>
-          <p class="out-v" data-out="half">—</p>
-          <p class="out-note">cash you could free up</p>
+          <p class="out-k">Cash tied up in AR</p>
+          <p class="out-v" data-out="tied">—</p>
         </div>
-        <div class="out-row">
-          <p class="out-k">Days of revenue sitting unpaid</p>
-          <p class="out-v" data-out="dso">—</p>
-          <p class="out-note" data-out="dso-note">An estimate based on your revenue range.</p>
-        </div>
-        <div class="out-foot">
-          <p class="out-proof">In 2024, an architecture firm cut its AR in half in 90 days.</p>
-          <a href="#intake" class="btn btn-primary full" data-calc-cta>
-            <span data-cta-label data-full="Find where your cash is stuck: book a 20-minute call" data-soft="Talk to us about your cash flow">Find where your cash is stuck: book a 20-minute call</span><span aria-hidden="true">→</span>
-          </a>
+        <div class="out-foot" data-email-step hidden>
+          <p class="out-proof">Enter your email to get these results. We will also use it to follow up about a 20-minute call.</p>
+          <div class="contact-form-wrap" data-form-wrap>
+            <form class="form calc-email-form" method="post" action="/api/contact" data-contact-form data-ar-results-form novalidate>
+              <label class="field"><span>Name</span><input class="input" name="name" autocomplete="name" required maxlength="120" /></label>
+              <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" required maxlength="200" /></label>
+              <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+              <input type="hidden" name="source" value={OFFER.source} />
+              <input type="hidden" name="monthly_revenue" value="" data-sync="monthly_revenue" />
+              <input type="hidden" name="days_to_paid" value="" data-sync="days_to_paid" />
+              <input type="hidden" name="cash_tied_up" value="" data-sync="cash_tied_up" />
+              <input type="hidden" name="t" value="" />
+              <input type="hidden" name="utm" value="" />
+              <input type="hidden" name="sid" value="" />
+              <input type="hidden" name="vid" value="" />
+              <button type="submit" class="btn btn-primary full"><span>Email me the results</span><span aria-hidden="true">→</span></button>
+              <p class="form-status full" role="status" aria-live="polite" hidden></p>
+              <p class="form-note full">We never share your details. See our <a href="/privacy">privacy policy</a>.</p>
+            </form>
+            <div class="success-box booking" hidden tabindex="-1">
+              <p class="num">Step 2 of 2</p>
+              <h3>Thanks. Now pick a time for your 20-minute call.</h3>
+              <p class="body">Your results are on their way to your inbox.</p>
+              {bookingUrl ? (
+                <a href={bookingUrl} class="btn btn-primary" rel="noopener" target="_blank" data-booking><span>Pick a time</span><span aria-hidden="true">↗</span></a>
+              ) : (
+                <p class="need">[need: booking link]</p>
+              )}
+              <p class="body">Or call <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -228,111 +240,17 @@ const schema = [
     </div>
   </section>
 
-  <!-- 7. Intake form and booking -->
-  <section id="intake" class="wrap section-tight" aria-labelledby="intake-h">
-    <div class="intake-grid">
-      <div class="intake-copy">
-        <div class="rule-top">
-          <h2 id="intake-h" class="h2">Book your <span class="nowrap">20-minute</span> call</h2>
-        </div>
-        <p class="body intake-lede">Answer the first three questions, then pick a time. The rest is optional, but it helps us come to the call prepared.</p>
-        <ol class="intake-steps">
-          <li><span>1</span>Answer a few questions</li>
-          <li><span>2</span>Pick a time for the call</li>
-          <li><span>3</span>We talk for 20 minutes</li>
-        </ol>
-        <div class="stack intake-contact">
-          <span class="muted">Prefer the phone?</span>
-          <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>
-          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-        </div>
-      </div>
-
-      <div class="contact-form-wrap" data-form-wrap>
-        <form class="form intake-form" id="intake-form" method="post" action="/api/contact" data-contact-form data-intake-form novalidate>
-          <p class="form-legend full">Questions 1 to 3 are required.</p>
-
-          <label class="field q full">
-            <span><b>1.</b> What does your business do, and roughly how many people work there?</span>
-            <textarea class="input" name="q_business" rows="3" required minlength="3" maxlength="2000"></textarea>
-          </label>
-          <label class="field q">
-            <span><b>2.</b> Annual revenue range</span>
-            <select class="input" name="revenue" required>
-              <option value="">Choose a range</option>
-              {REVENUE_RANGES.map((r) => <option value={r.label}>{r.label}</option>)}
-            </select>
-          </label>
-          <label class="field q">
-            <span><b>3.</b> Total open AR ($)</span>
-            <span class="money"><span aria-hidden="true">$</span><input class="input" name="open_ar" inputmode="decimal" required data-money pattern="\$?[0-9][0-9,]*(\.[0-9]{1,2})?" title="A dollar amount, like 250,000" /></span>
-          </label>
-
-          <p class="form-sep full">Optional</p>
-
-          <label class="field q">
-            <span><b>4.</b> How much of your AR is over 90 days? <span class="opt">(optional)</span></span>
-            <span class="money"><span aria-hidden="true">$</span><input class="input" name="ar_over_90" inputmode="decimal" data-money pattern="\$?[0-9][0-9,]*(\.[0-9]{1,2})?" title="A dollar amount, like 40,000" /></span>
-          </label>
-          <label class="field q">
-            <span><b>5.</b> Average days from finishing a job to getting paid <span class="opt">(optional)</span></span>
-            <input class="input" name="days_to_paid" type="number" min="0" max="3650" step="1" inputmode="numeric" />
-          </label>
-          <label class="field q full">
-            <span><b>6.</b> How do invoices go out today, and who follows up when one is late? <span class="opt">(optional)</span></span>
-            <textarea class="input" name="q_invoicing" rows="3" maxlength="2000"></textarea>
-          </label>
-          <fieldset class="field q full pick">
-            <legend><b>7.</b> Where does work or money get stuck most? <span class="opt">(optional)</span></legend>
-            <div class="pick-row">
-              {STUCK_OPTIONS.map((o) => <label class="pick-opt"><input type="checkbox" name="stuck" value={o} /><span>{o}</span></label>)}
-            </div>
-          </fieldset>
-          <label class="field q full">
-            <span><b>8.</b> If one thing ran itself next month, what would it be? <span class="opt">(optional)</span></span>
-            <input class="input" name="q_one_thing" maxlength="1000" />
-          </label>
-
-          <p class="form-sep full">Your details</p>
-
-          <label class="field"><span>Name</span><input class="input" name="name" autocomplete="name" required maxlength="120" /></label>
-          <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" required maxlength="200" /></label>
-          <label class="field"><span>Phone <span class="opt">(optional)</span></span><input class="input" type="tel" name="phone" autocomplete="tel" maxlength="40" /></label>
-          <label class="field"><span>Company <span class="opt">(optional)</span></span><input class="input" name="company" autocomplete="organization" maxlength="160" /></label>
-
-          <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off" /></label></div>
-          <input type="hidden" name="source" value={OFFER.source} />
-          <input type="hidden" name="calc_days" value="" />
-          <input type="hidden" name="t" value="" />
-          <input type="hidden" name="utm" value="" />
-          <input type="hidden" name="sid" value="" />
-          <input type="hidden" name="vid" value="" />
-          <button type="submit" class="btn btn-primary full"><span>Send and pick a time</span><span aria-hidden="true">→</span></button>
-          <p class="form-status full" role="status" aria-live="polite" hidden></p>
-          <p class="form-note full">We reply within one business day. We never share your details. See our <a href="/privacy">privacy policy</a>.</p>
-        </form>
-
-        <div class="success-box booking" hidden tabindex="-1">
-          <p class="num">Step 2 of 2</p>
-          <h3>Thanks. Now pick a time for your 20-minute call.</h3>
-          <p class="body">We have your answers, and a confirmation is on its way to your inbox.</p>
-          {bookingUrl ? (
-            <a href={bookingUrl} class="btn btn-primary" rel="noopener" target="_blank" data-booking><span>Pick a time</span><span aria-hidden="true">↗</span></a>
-          ) : (
-            <p class="need">[need: booking link]</p>
-          )}
-          <p class="body">Or call <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 </Base>
 
 <script>
   import { initContactForms } from '~/scripts/contact';
   import { initArCalculator } from '~/scripts/ar-calc';
+  import { initHeadline } from '~/scripts/headline';
+  import { initAdsConversions } from '~/scripts/ads-conversions';
+  initHeadline();
   initContactForms();
   initArCalculator();
+  initAdsConversions();
 </script>
 
 <style>
@@ -380,6 +298,16 @@ const schema = [
     .calc { grid-template-columns: 1fr; }
     .calc-out { border-left: 0; border-top: 2px solid var(--line); }
   }
+
+
+  .hero-terms, .hero-proof { margin-top: 16px; max-width: 640px; font-size: 17px; line-height: 1.55; color: var(--text-2); }
+  .hero-terms { margin-top: 22px; padding-left: 12px; border-left: 2px solid var(--butter); }
+  .hero-proof { color: var(--text-3); }
+  .hero-actions { margin-top: 28px; }
+  .calc-email-form { display: grid; gap: 16px; }
+  .calc-email-form .field span { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ice); }
+  .calc-email-form .form-note, .calc-email-form .form-status { margin: 0; }
+  .calc-out .booking { margin-top: 8px; }
 
   /* Proof */
   .proof-cell { margin: 0; padding: 32px 28px 36px; gap: 18px; }
