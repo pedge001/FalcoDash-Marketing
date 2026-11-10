@@ -1,5 +1,9 @@
 // Single source of truth for company facts. Pages, JSON-LD, llms.txt and emails all read from here,
 // so the entity description stays identical everywhere search and answer engines look.
+import profiles from './profiles.json';
+
+/** Official profile URLs from profiles.json, for the Organization's sameAs. Empty values are skipped. */
+const PROFILE_URLS = [profiles.linkedinCompany, profiles.googleBusinessProfile].filter((u): u is string => typeof u === 'string' && /^https:\/\//.test(u.trim())).map((u) => u.trim());
 
 export const SITE = {
   name: 'FalcoDash',
@@ -33,7 +37,7 @@ export const SITE = {
     linkedin: 'https://www.linkedin.com/in/patrickedgett',
     sameAs: ['https://www.linkedin.com/in/patrickedgett', 'https://www.pennyempire.com', 'https://www.patrickedgett.com'],
   },
-  sameAs: [] as string[],
+  sameAs: PROFILE_URLS,
   knowsAbout: [
     'AI automation',
     'AI workflows',

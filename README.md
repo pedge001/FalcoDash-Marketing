@@ -9,7 +9,7 @@ Built with [Astro](https://astro.build) and deployed to Railway with Postgres (l
 | Piece | What it does |
 | --- | --- |
 | Astro 7 + `@astrojs/node` | Static pages plus a small Node server for the API |
-| `server.mjs` | Production entry: security headers, cache headers, www → apex, legacy path redirects to app.falcodash.com |
+| `server.mjs` | Production entry: security headers, cache headers, www and HTTP → https://falcodash.com, crawler logging |
 | Postgres (`postgres` driver) | Stores every audit request in `leads` (`db/schema.sql`) |
 | Resend | Emails each new lead to the team and sends the submitter a confirmation |
 | Admin panel at `/admin` | Your analytics, visitor map, AI crawler log and lead pipeline (password: `ADMIN_PASSWORD`) |
@@ -118,6 +118,16 @@ Screenshots that aren't 16:10 can be padded onto a 16:10 canvas in their own bac
 ```bash
 node scripts/frame-shot.mjs ~/Downloads/notes.png work-notes
 ``` Blog cover images are uploaded through the CMS (or placed in `public/images/blog/` and set as `cover` in the post).
+
+## Redirects and 404s
+
+- `http://` and `www.` go to `https://falcodash.com` with a 301.
+- Unknown paths return a real 404 page (`src/pages/404.astro`). Nothing is forwarded to app.falcodash.com automatically; product subdomains are only reached through links on the pages.
+- `/free-audit`, `/audit` and `/pricing` send a temporary 302 to `/contact` until real pages exist (`src/pages/[...path].ts`).
+
+## Organization profiles
+
+`src/data/profiles.json` holds the LinkedIn company page and Google Business Profile URLs. Filled-in values appear in the Organization JSON-LD as `sameAs`; empty ones are left out.
 
 ## SEO and AEO
 

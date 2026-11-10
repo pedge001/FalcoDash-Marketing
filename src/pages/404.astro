@@ -7,6 +7,7 @@ import { NAV } from '~/data/site';
     <p class="eyebrow" style="margin-bottom:24px">404</p>
     <h1 class="display-sm">That page doesn't exist.</h1>
     <p class="lede" style="margin-top:24px">Looking for the association dashboard? It moved to <a href="https://app.falcodash.com">app.falcodash.com</a>.</p>
+    <div class="hero-actions"><a href="/contact" class="btn btn-primary"><span>Contact us</span><span aria-hidden="true">→</span></a></div>
     <ul class="ticks mt-3" style="max-width:900px">
       <li><a href="/">Home</a></li>
       {NAV.map((n) => <li><a href={n.href}>{n.label}</a></li>)}

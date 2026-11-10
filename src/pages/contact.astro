@@ -5,7 +5,7 @@ import ContactForm from '~/components/ContactForm.astro';
 import { SITE } from '~/data/site';
 
 const title = 'Get a Free AI Automation Audit | FalcoDash';
-const description = "Request a free automation audit. Tell us what's slowing your team down and FalcoDash will show you what to automate first. Call (909) 499-6997.";
+const description = 'Request a free AI automation audit from FalcoDash in Redlands, CA. Tell us what slows your team down and get a written shortlist of what to automate first.';
 const crumbs = [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }];
 ---
 <Base title={title} description={description} path="/contact" breadcrumbs={crumbs} ogImage="/og/contact.png" pageType="ContactPage">
@@ -13,8 +13,8 @@ const crumbs = [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact'
     <Breadcrumbs items={crumbs} />
     <div class="split" style="gap:56px">
       <div class="stack">
-        <p class="eyebrow">Free automation audit</p>
-        <h1 class="display-sm" style="font-size:clamp(44px,6vw,88px);line-height:.95">{SITE.tagline}</h1>
+        <p class="eyebrow">{SITE.tagline}</p>
+        <h1 class="display-sm" style="font-size:clamp(44px,6vw,88px);line-height:.95">Get a free AI automation audit.</h1>
         <p class="lede" data-answer>Tell us what's slowing your team down. We'll set up a free audit and show you what to automate first. You leave with a written shortlist, whether or not you work with us.</p>
         <div class="stack" style="--gap:6px;font-size:17px">
           <a href={`tel:${SITE.phone}`} style="color:var(--white);text-decoration:none">{SITE.phoneDisplay}</a>

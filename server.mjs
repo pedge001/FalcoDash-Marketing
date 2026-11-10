@@ -87,8 +87,10 @@ const server = http.createServer((req, res) => {
   const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().split(',')[0].trim().toLowerCase();
   const path = (req.url || '/').split('?')[0];
 
-  if (host === `www.${CANONICAL_HOST}`) {
-    res.writeHead(301, { Location: `https://${CANONICAL_HOST}${req.url || '/'}` });
+  // One hop to https://falcodash.com for www and for plain-HTTP requests that reach the origin.
+  const proto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  if (host === `www.${CANONICAL_HOST}` || (host === CANONICAL_HOST && proto === 'http')) {
+    res.writeHead(301, { Location: `https://${CANONICAL_HOST}${req.url || '/'}`, 'Cache-Control': 'public, max-age=86400' });
     return res.end();
   }
   if (path === '/healthz') {
