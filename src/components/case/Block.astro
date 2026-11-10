@@ -1,0 +1,14 @@
+---
+// One case-study block: label + heading on the left, content on the right, ruled like the rest of the site.
+interface Props { id: string; num: string; title: string }
+const { id, num, title } = Astro.props;
+---
+<section class="wrap section-tight split" id={id} aria-labelledby={`${id}-h`}>
+  <div class="stack" style="border-top:2px solid var(--white);padding-top:16px;--gap:10px">
+    <span class="label">{num}</span>
+    <h2 id={`${id}-h`} class="h3" style="font-size:clamp(26px,2.6vw,34px)">{title}</h2>
+  </div>
+  <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
+    <slot />
+  </div>
+</section>

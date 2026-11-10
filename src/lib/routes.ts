@@ -25,6 +25,7 @@ export async function allRoutes(): Promise<RouteEntry[]> {
     page('/redlands', 0.8),
     page('/about', 0.7),
     page('/faq', 0.7),
+    page('/free-audit', 0.9),
     page('/contact', 0.8),
     { path: '/blog', lastmod: latestPost, priority: 0.8, changefreq: 'weekly' },
     ...categories().map((c) => {

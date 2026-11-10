@@ -1,0 +1,38 @@
+---
+// Results block. Only measured values (value !== null) render on the live site. Missing ones show as
+// clearly marked TODO placeholders in development, or in any build with PUBLIC_SHOW_TODOS=1.
+import Block from './Block.astro';
+import type { Result } from '~/data/work';
+interface Props { results: Result[]; num: string }
+const { results, num } = Astro.props;
+const showTodos = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_TODOS === '1';
+const filled = results.filter((r) => r.value !== null);
+const missing = results.filter((r) => r.value === null);
+const visible = filled.length > 0 || (showTodos && missing.length > 0);
+---
+{visible && (
+  <Block id="results" num={num} title="Results">
+    <div class="res">
+      {filled.map((r) => <div class="tile"><span class="k">{r.label}</span><span class="v">{r.value}</span></div>)}
+      {showTodos && missing.map((r) => (
+        <div class="tile todo" data-todo>
+          <span class="k">TODO · {r.label}</span>
+          <span class="v" style="color:var(--muted)">—</span>
+          <span class="d">{r.todo}</span>
+        </div>
+      ))}
+    </div>
+    {showTodos && missing.length > 0 && <p class="note">Placeholders are only visible in development. Fill in <code>results</code> in src/data/work.ts with measured numbers.</p>}
+  </Block>
+)}
+
+<style>
+  .res { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); border-top: 2px solid var(--line); border-left: 2px solid var(--line); }
+  .tile { border-right: 2px solid var(--line); border-bottom: 2px solid var(--line); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .tile .k { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--ice); }
+  .tile .v { font-stretch: 125%; font-weight: 800; font-size: 36px; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .tile .d { font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .tile.todo { outline: 2px dashed var(--butter); outline-offset: -6px; }
+  .tile.todo .k { color: var(--butter); }
+  .tile.todo .v { color: var(--muted); }
+</style>

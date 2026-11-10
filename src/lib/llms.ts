@@ -20,7 +20,7 @@ export async function llmsTxt() {
 
 Tagline: ${SITE.tagline}
 Contact: ${SITE.email} · ${SITE.phoneDisplay} · ${SITE.locationLine}
-Every engagement starts with a free automation audit: ${abs('/contact')}
+Every engagement starts with a free automation audit: ${abs('/free-audit')}
 
 ## Services
 ${SERVICES.map((s) => `- [${s.name}](${abs(`/services/${s.slug}`)}): ${s.shortAnswer}`).join('\n')}
@@ -28,7 +28,7 @@ ${SERVICES.map((s) => `- [${s.name}](${abs(`/services/${s.slug}`)}): ${s.shortAn
 ## Industries
 ${INDUSTRIES.map((i) => `- [${i.name}](${abs(`/industries/${i.slug}`)}): ${i.shortAnswer}`).join('\n')}
 
-## Products and work
+## Products and case studies
 ${WORK.map((w) => `- [${w.name}](${abs(`/work/${w.slug}`)}) (live at ${w.url}): ${w.shortAnswer}`).join('\n')}
 
 ## Company
@@ -37,7 +37,8 @@ ${WORK.map((w) => `- [${w.name}](${abs(`/work/${w.slug}`)}) (live at ${w.url}): 
 - [Inland Empire](${abs('/inland-empire')}): AI workflows, assistants, automations and dashboards for businesses in Redlands, San Bernardino and Riverside counties.
 - [About](${abs('/about')}): Who FalcoDash is and who founded it.
 - [FAQ](${abs('/faq')}): Answers on cost, timelines, tools, data security and ownership.
-- [Contact](${abs('/contact')}): Request a free automation audit.
+- [Free AI automation audit](${abs('/free-audit')}): One working session on how your team runs today, then a written shortlist of what to automate first, with rough hours saved. Free, no obligation.
+- [Contact](${abs('/contact')}): Phone, email and the contact form.
 
 ## Blog
 ${posts.map((p) => `- [${p.data.title}](${abs(`/blog/${p.id}`)}): ${p.data.short_answer}`).join('\n')}
@@ -65,7 +66,9 @@ export async function llmsFullTxt() {
     out.push(`## Industry: ${i.name}\nURL: ${abs(`/industries/${i.slug}`)}\n\n${i.shortAnswer}\n\n${i.useCases.map((u) => `- **${u.title}**: ${u.body}`).join('\n')}${fp}\n\n### Questions\n${faqMd(i.faqs)}`);
   }
   for (const w of WORK) {
-    out.push(`## Product: ${w.name}\nURL: ${abs(`/work/${w.slug}`)} · Live at ${w.url}\n\n${w.shortAnswer}\n\nProblem: ${w.problem}\nAudience: ${w.audience}\n\nWhat we built:\n${w.built.map((b) => `- ${b}`).join('\n')}\n\n### Questions\n${faqMd(w.faqs)}`);
+    // Only measured results are published; null (TODO) results are left out.
+    const results = w.results.filter((r) => r.value !== null);
+    out.push(`## Case study: ${w.name}\nURL: ${abs(`/work/${w.slug}`)} · Live at ${w.url}\n\n${w.shortAnswer}\n\n### Context\n${w.context}\nBuilt for: ${w.audience}\n\n### Problem\n${w.problem}\n\n### Constraints\n${w.constraints.map((c) => `- ${c}`).join('\n')}\n\n### What we built\n${w.built.map((x) => `- ${x}`).join('\n')}\n\n### Stack\n${w.stack.map((x) => `- ${x}`).join('\n')}${results.length ? `\n\n### Results\n${results.map((r) => `- ${r.label}: ${r.value}`).join('\n')}` : ''}${w.quote ? `\n\n> ${w.quote.text}\n> — ${w.quote.name}${w.quote.role ? `, ${w.quote.role}` : ''}` : ''}\n\n### Questions\n${faqMd(w.faqs)}`);
   }
   for (const p of posts) {
     const d = p.data;

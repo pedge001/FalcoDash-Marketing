@@ -68,6 +68,6 @@ export function initTracking() {
     const url = safe(() => new URL(a.href, location.href), null);
     if (!url) return;
     if (url.host !== location.host && /^https?:$/.test(url.protocol)) track('outbound_click', { url: url.href.slice(0, 200) });
-    else if (url.pathname === '/contact') track('cta_click', { text: (a.textContent || '').trim().slice(0, 60) });
+    else if (url.pathname === '/contact' || url.pathname === '/free-audit') track('cta_click', { text: (a.textContent || '').trim().slice(0, 60) });
   }, { capture: true });
 }

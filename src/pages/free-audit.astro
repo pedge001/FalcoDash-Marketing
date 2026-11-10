@@ -1,0 +1,130 @@
+---
+// The free automation audit offer. Every primary "free audit" CTA on the site points here.
+// Copy only restates what the site already promises: one working session, a written shortlist
+// with rough hours-saved estimates, no obligation, reply within one business day.
+//
+// TODO(confirm): typical length of the working session (e.g. "about an hour"); add it to step 2 and
+//   the "How long does it take?" answer.
+// TODO(confirm): how soon after the session the written shortlist arrives.
+// TODO(confirm): that the audit never needs logins or system access (stated in "What we need" and
+//   the data privacy answer), and that shared examples are used only to prepare the shortlist.
+import Base from '~/layouts/Base.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ShortAnswer from '~/components/ShortAnswer.astro';
+import ContactForm from '~/components/ContactForm.astro';
+import FAQ from '~/components/FAQ.astro';
+import { SITE } from '~/data/site';
+import { faqPage } from '~/lib/schema';
+
+const path = '/free-audit';
+const title = 'Free AI Automation Audit | FalcoDash';
+const description =
+  'Get a free AI automation audit from FalcoDash. One working session on how your team runs today, then a written shortlist of what to automate first.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: 'Free audit', path }];
+
+const FOR = [
+  { name: 'Real estate teams', href: '/industries/real-estate', body: 'Offers, leads and transaction deadlines that eat agent and coordinator time.' },
+  { name: 'Small and mid-size businesses', href: '/industries/small-business', body: 'Quotes, invoices, inbox triage and the weekly numbers someone builds by hand.' },
+  { name: 'Community associations', href: '/industries/associations', body: 'Board financials and monthly reports assembled from accounting exports.' },
+  { name: 'Non-profits', href: '/industries/non-profits', body: 'Donor updates and grant reports compiled from several systems.' },
+];
+
+const GET = [
+  { h: 'A written shortlist', p: 'The processes worth automating first, in order, based on how your team actually works.' },
+  { h: 'Rough hours saved', p: 'An estimate of the time each item on the shortlist would give back each week.' },
+  { h: 'A plan you keep', p: 'The shortlist is yours. Build it with us, with another vendor or in-house.' },
+];
+
+const STEPS = [
+  { k: 'Step 01', h: 'Request the audit', p: 'Fill in the form below. We reply within one business day to set a time.' },
+  { k: 'Step 02', h: 'One working session', p: 'Walk us through how the work runs today: the tools, the handoffs and where the hours go.' },
+  { k: 'Step 03', h: 'Get your shortlist', p: 'We send a written shortlist of what to automate first, with rough hours saved for each item.' },
+];
+
+const NEED = [
+  'Someone who knows how the work runs day to day.',
+  'A list of the tools you use: CRM, accounting, email, spreadsheets.',
+  'One or two examples of the repetitive work, such as a report or a form, with anything sensitive removed.',
+  'No logins or system access. The audit is a conversation, not an install.',
+];
+
+const faqs = [
+  { q: 'Is the audit really free?', a: 'Yes. There is no charge for the audit or the written shortlist.' },
+  { q: 'Is there any obligation?', a: 'No. You keep the shortlist whether or not you work with us. If you want help building it, we send a fixed scope and quote first, and nothing starts until you approve it.' },
+  { q: 'How long does it take?', a: 'One working session on how your team runs today, followed by the written shortlist. We reply to your request within one business day to schedule it.' },
+  { q: 'What happens to our data?', a: 'The audit needs no logins or access to your systems. Anything you share stays private: we never share your details, and examples you send are used only to prepare your shortlist. See our [privacy policy](/privacy).' },
+];
+
+const schema = [faqPage(faqs, path)];
+---
+<Base title={title} description={description} path={path} breadcrumbs={crumbs} schema={schema} ogImage="/og/free-audit.png" ogImageAlt="FalcoDash: free AI automation audit">
+  <section class="wrap page-head" style="padding-bottom:var(--section-y)">
+    <Breadcrumbs items={crumbs} />
+    <div class="split" style="gap:56px">
+      <div class="stack">
+        <p class="eyebrow">{SITE.tagline}</p>
+        <h1 class="display-sm" style="font-size:clamp(44px,6vw,88px);line-height:.95">Free AI automation audit</h1>
+        <p class="lede" data-answer>Tell us what slows your team down. In one working session we map how the work runs today, then send you a written shortlist of what to automate first. Free, with no obligation.</p>
+        <div class="stack" style="--gap:6px;font-size:17px">
+          <a href={`tel:${SITE.phone}`} style="color:var(--white);text-decoration:none">{SITE.phoneDisplay}</a>
+          <a href={`mailto:${SITE.email}`} style="color:var(--white);text-decoration:none">{SITE.email}</a>
+        </div>
+      </div>
+      <div id="request">
+        <ContactForm id="free-audit-form" source="free-audit" />
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section-tight">
+    <div style="max-width:900px">
+      <ShortAnswer heading="What is a free AI automation audit?" text="A free AI automation audit is one working session in which FalcoDash maps how your team runs today and identifies the repetitive work that AI and automation could take over. You get a written shortlist of what to automate first, with rough hours saved for each item, and no obligation to hire us." />
+    </div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="for-h">
+    <div class="sec-head"><h2 id="for-h" class="h2">Who it's for</h2><a href="/industries" class="meta">All industries →</a></div>
+    <div class="grid-cells" style="--min:260px">
+      {FOR.map((f) => (
+        <a href={f.href} class="cell cell-tall">
+          <h3 style="margin-top:0">{f.name}</h3>
+          <p>{f.body}</p>
+          <span class="more" aria-hidden="true">Learn more →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap section-tight" aria-labelledby="get-h">
+    <div class="sec-head"><h2 id="get-h" class="h2">What you walk away with</h2></div>
+    <div class="grid-cells cols-3">
+      {GET.map((g, i) => <div class="cell"><span class="num">{String(i + 1).padStart(2, '0')}</span><h3>{g.h}</h3><p>{g.p}</p></div>)}
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="steps-h">
+    <div class="wrap section">
+      <h2 id="steps-h" class="display-sm" style="margin-bottom:48px">Three steps</h2>
+      <ol class="steps">
+        {STEPS.map((s) => <li><span class="k">{s.k}</span><h3>{s.h}</h3><p>{s.p}</p></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="wrap section split" aria-labelledby="need-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="need-h" class="h2">What we need from you</h2></div>
+    <ul class="ticks ticks-col" style="font-size:18px;border-top:2px solid var(--white);padding-top:24px">{NEED.map((n) => <li>{n}</li>)}</ul>
+  </section>
+
+  <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
+    <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions about the audit</h2></div>
+    <FAQ faqs={faqs} />
+  </section>
+
+  <section class="band" aria-label="Request the audit">
+    <div class="wrap cta-band">
+      <h2>Ready when you are.</h2>
+      <a href="#request" class="btn btn-dark"><span>Request my free audit</span><span aria-hidden="true">↑</span></a>
+    </div>
+  </section>
+</Base>

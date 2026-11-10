@@ -7,11 +7,13 @@ import { join } from 'node:path';
 
 export const prerender = false;
 
-// Paths people expect to exist. Temporary (302) until real pages are built, so search engines
-// don't treat /contact as their permanent home.
+// Short aliases for real pages: permanent.
+const PERMANENT: Record<string, string> = {
+  '/audit': '/free-audit',
+};
+// Paths people expect to exist. Temporary (302) until a real page is built, so search engines
+// don't treat the target as its permanent home.
 const TEMPORARY: Record<string, string> = {
-  '/free-audit': '/contact',
-  '/audit': '/contact',
   '/pricing': '/contact',
 };
 
@@ -26,7 +28,8 @@ function notFound() {
 }
 
 export const ALL: APIRoute = ({ url }) => {
-  const target = TEMPORARY[url.pathname.replace(/\/+$/, '').toLowerCase()];
-  if (target) return new Response(null, { status: 302, headers: { Location: `${target}${url.search}`, 'Cache-Control': 'no-store' } });
+  const key = url.pathname.replace(/\/+$/, '').toLowerCase();
+  if (PERMANENT[key]) return new Response(null, { status: 301, headers: { Location: `${PERMANENT[key]}${url.search}`, 'Cache-Control': 'public, max-age=86400' } });
+  if (TEMPORARY[key]) return new Response(null, { status: 302, headers: { Location: `${TEMPORARY[key]}${url.search}`, 'Cache-Control': 'no-store' } });
   return notFound();
 };

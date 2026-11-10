@@ -6,6 +6,8 @@ import Shot from '~/components/Shot.astro';
 import CtaBand from '~/components/CtaBand.astro';
 import FAQ from '~/components/FAQ.astro';
 import WorkCard from '~/components/WorkCard.astro';
+import Block from '~/components/case/Block.astro';
+import Results from '~/components/case/Results.astro';
 import { WORK, type Work } from '~/data/work';
 import { serviceBySlug } from '~/data/services';
 import { industryBySlug } from '~/data/industries';
@@ -51,24 +53,42 @@ const schema = [
   </section>
   <section class="wrap section-tight"><div style="max-width:900px"><ShortAnswer heading={`What is ${w.name}?`} text={w.shortAnswer} /></div></section>
 
-  <section class="wrap section-tight split" aria-label="Project details">
-    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
-      <h2 class="h3">The problem</h2>
-      <p class="body" style="font-size:18px;line-height:1.65">{w.problem}</p>
-      <h2 class="h3 mt-2">Who it's for</h2>
-      <p class="body" style="font-size:18px;line-height:1.65">{w.audience}</p>
-    </div>
-    <div class="stack" style="border-top:2px solid var(--white);padding-top:16px">
-      <h2 class="h3">What we built</h2>
-      <ul class="ticks ticks-col" style="font-size:18px">{w.built.map((b) => <li>{b}</li>)}</ul>
-      <dl class="kv mt-2">
-        <dt>Platform</dt><dd>{w.platform}</dd>
-        <dt>Services</dt><dd>{services.map((s, i) => <>{i > 0 && ', '}<a href={`/services/${s.slug}`}>{s.name}</a></>)}</dd>
-        {industries.length > 0 && <><dt>Industry</dt><dd>{industries.map((ind, i) => <>{i > 0 && ', '}<a href={`/industries/${ind.slug}`}>{ind.name}</a></>)}</dd></>}
-        <dt>Live at</dt><dd><a href={w.url} rel="noopener">{w.host}</a></dd>
-      </dl>
-    </div>
-  </section>
+  <Block id="context" num="01" title="Context">
+    <p class="body" style="font-size:18px;line-height:1.65">{w.context}</p>
+    <p class="body" style="font-size:18px;line-height:1.65"><strong style="color:var(--white)">Built for:</strong> {w.audience}</p>
+  </Block>
+
+  <Block id="problem" num="02" title="The problem">
+    <p class="body" style="font-size:18px;line-height:1.65">{w.problem}</p>
+  </Block>
+
+  <Block id="constraints" num="03" title="Constraints">
+    <ul class="ticks ticks-col" style="font-size:18px">{w.constraints.map((c) => <li>{c}</li>)}</ul>
+  </Block>
+
+  <Block id="built" num="04" title="What we built">
+    <ul class="ticks ticks-col" style="font-size:18px">{w.built.map((b) => <li>{b}</li>)}</ul>
+    <dl class="kv mt-1">
+      <dt>Services</dt><dd>{services.map((s, i) => <>{i > 0 && ', '}<a href={`/services/${s.slug}`}>{s.name}</a></>)}</dd>
+      {industries.length > 0 && <><dt>Industry</dt><dd>{industries.map((ind, i) => <>{i > 0 && ', '}<a href={`/industries/${ind.slug}`}>{ind.name}</a></>)}</dd></>}
+      <dt>Live at</dt><dd><a href={w.url} rel="noopener">{w.host}</a></dd>
+    </dl>
+  </Block>
+
+  <Block id="stack" num="05" title="Stack">
+    <ul class="ticks" style="font-size:17px">{w.stack.map((t) => <li>{t}</li>)}</ul>
+  </Block>
+
+  <Results results={w.results} num="06" />
+
+  {w.quote && (
+    <section class="wrap section-tight" aria-label="Quote">
+      <figure style="margin:0;border-top:2px solid var(--ice);padding-top:24px;max-width:900px">
+        <blockquote style="margin:0;font-stretch:125%;font-weight:800;font-size:clamp(26px,3vw,40px);line-height:1.15;letter-spacing:-.02em">“{w.quote.text}”</blockquote>
+        <figcaption class="body mt-2">{w.quote.name}{w.quote.role && `, ${w.quote.role}`}</figcaption>
+      </figure>
+    </section>
+  )}
 
   <section class="wrap section-tight split" style="--min:380px" aria-labelledby="faq-h">
     <div style="border-top:2px solid var(--white);padding-top:16px"><h2 id="faq-h" class="h2">Questions</h2></div>
@@ -79,5 +99,5 @@ const schema = [
     <div class="sec-head"><h2 id="more-h" class="h2">More work</h2><a href="/work" class="meta">All work →</a></div>
     <div class="grid-auto" style="--min:480px">{others.map((o) => <WorkCard work={o} />)}</div>
   </section>
-  <CtaBand heading="Want something like this for your team?" />
+  <CtaBand heading="Want something like this for your team?" href="/free-audit" />
 </Base>

@@ -123,7 +123,15 @@ node scripts/frame-shot.mjs ~/Downloads/notes.png work-notes
 
 - `http://` and `www.` go to `https://falcodash.com` with a 301.
 - Unknown paths return a real 404 page (`src/pages/404.astro`). Nothing is forwarded to app.falcodash.com automatically; product subdomains are only reached through links on the pages.
-- `/free-audit`, `/audit` and `/pricing` send a temporary 302 to `/contact` until real pages exist (`src/pages/[...path].ts`).
+- `/free-audit` is the audit landing page; every primary "free audit" CTA links there. `/audit` 301s to it, and `/pricing` sends a temporary 302 to `/contact` until a real page exists (`src/pages/[...path].ts`).
+
+## Case studies
+
+Work pages (`/work/[slug]`) are built from `src/data/work.ts` in fixed blocks: context, problem, constraints, what we built, stack, results, optional quote, FAQ, CTA.
+
+- **Results**: each case study has hours saved per week, error rate and cycle time slots with `value: null` and a note on what to measure. Null results never appear on the live site or in llms-full.txt. Run `npm run dev`, or build with `PUBLIC_SHOW_TODOS=1`, to see them as marked placeholders.
+- **Stack**: entries are marked `TODO(confirm)` in the source until checked.
+- **Quote**: optional `quote: { text, name, role }`. Only add real, attributable quotes.
 
 ## Organization profiles
 

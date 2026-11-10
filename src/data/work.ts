@@ -16,14 +16,36 @@ export type Work = {
   description: string;
   shortAnswer: string;
   audience: string;
+  /** Case study: the situation before the build. */
+  context: string;
   problem: string;
+  /** Requirements the build had to meet. Only ones the shipped product demonstrably meets. */
+  constraints: string[];
   built: string[];
+  /** Tools and platforms. Every entry is TODO(confirm) until you've checked it. */
+  stack: string[];
+  /**
+   * Results. Leave value null until you have a real, measured number. Null results never render on
+   * the live site; they show as marked TODO placeholders in `npm run dev` (or with PUBLIC_SHOW_TODOS=1).
+   */
+  results: Result[];
+  /** Optional client or user quote. Only add real, attributable quotes. */
+  quote?: { text: string; name: string; role?: string };
   services: string[];
   industries: string[];
   appCategory: string;
   platform: string;
   faqs: FAQ[];
 };
+
+export type Result = { label: string; value: string | null; todo: string };
+
+/** The standard result slots every case study starts with. */
+const resultSlots = (opts: { hours: string; errors: string; cycle: string }): Result[] => [
+  { label: 'Hours saved per week', value: null, todo: opts.hours },
+  { label: 'Error rate', value: null, todo: opts.errors },
+  { label: 'Cycle time', value: null, todo: opts.cycle },
+];
 
 export const WORK: Work[] = [
   {
@@ -45,6 +67,24 @@ export const WORK: Work[] = [
     audience: 'Association boards, community managers and management companies.',
     problem:
       'Board members wait weeks for financial reports that arrive as long PDFs, and managers spend days each month assembling them by hand.',
+    context:
+      'FalcoDash for Associations was the first FalcoDash product: a single dashboard for community association boards. It ran at falcodash.com until the firm took over that domain, and now lives at app.falcodash.com.',
+    constraints: [
+      'Board members are volunteers, not accountants, so every number has to read at a glance.',
+      'Board members, managers and owners need to see different things, so access is set per person.',
+      'The numbers come from the association’s existing accounting data, not a new system to maintain.',
+    ],
+    stack: [
+      // TODO(confirm): taken from the Railway project list ("Falco Dash": web service + MySQL).
+      'Web app',
+      'MySQL',
+      'Hosted on Railway',
+    ],
+    results: resultSlots({
+      hours: 'Manager hours per month spent assembling the board financial report, before vs. after.',
+      errors: 'Corrections or restatements in board financials, before vs. after.',
+      cycle: 'Days from month-end close to the board seeing financials, before vs. after.',
+    }),
     built: [
       'A live financial dashboard built for board members, not accountants.',
       'Board-ready reports generated from the same connected data.',
@@ -78,6 +118,24 @@ export const WORK: Work[] = [
     audience: 'Journalists, campaigns, advocacy groups, researchers and engaged voters.',
     problem:
       'California campaign-finance data is public, but it is spread across large filings that are hard to search and harder to read.',
+    context:
+      'California campaign-finance filings are public, including the late contribution reports (Form 497) that campaigns must file close to an election. CA FalcoDash turns them into a tracker anyone can read.',
+    constraints: [
+      'Filings keep arriving, especially late reports before an election, so updates have to run on a schedule without manual work.',
+      'Readers range from reporters to voters, so committees, candidates and contributors have to be searchable in plain language.',
+    ],
+    stack: [
+      // TODO(confirm): taken from the Railway project list ("CA-FalcoDash": API, frontend, cron, Postgres).
+      'Web front end and API service',
+      'Scheduled ingestion jobs',
+      'PostgreSQL',
+      'Hosted on Railway',
+    ],
+    results: resultSlots({
+      hours: 'Hours per week someone would spend pulling and cleaning filings by hand (if you have a baseline).',
+      errors: 'Ingestion failures or mismatched filings per month.',
+      cycle: 'Time from a filing being published to it appearing on the tracker.',
+    }),
     built: [
       'Automated ingestion of public campaign-finance filings.',
       'Search and filters across committees, candidates and contributors.',
@@ -111,6 +169,22 @@ export const WORK: Work[] = [
     audience: 'Forensic architects and field investigators.',
     problem:
       'General note-taking apps did not match how forensic architects document a site, leaving observations scattered across photos, paper and memory.',
+    context:
+      'Forensic architects document building conditions on site and turn their observations into reports. FalcoDash Notes is a custom iOS app built for that work.',
+    constraints: [
+      'It has to work on site, on an iOS device, while the architect is inspecting.',
+      'Observations, photos and notes have to stay organized by project so they can go straight into a report.',
+      // TODO(confirm): does it work offline on site? If so, add it as a constraint.
+    ],
+    stack: [
+      // TODO(confirm): language/framework, sync and storage.
+      'iOS app',
+    ],
+    results: resultSlots({
+      hours: 'Hours per inspection spent reorganizing notes and photos for the report, before vs. after.',
+      errors: 'Observations missed or mismatched to photos in reports, before vs. after.',
+      cycle: 'Days from site visit to finished report, before vs. after.',
+    }),
     built: [
       'A native iOS app designed around the site inspection workflow.',
       'Structured capture of observations, photos and notes.',
@@ -143,6 +217,25 @@ export const WORK: Work[] = [
     audience: 'Listing agents, real estate teams and brokerages.',
     problem:
       'Every offer arrives as a different document with terms in different places. Building a clean comparison for the seller by hand is slow and easy to get wrong.',
+    context:
+      'When a listing gets several offers, the listing agent has to explain them to the seller side by side. OPZ was built by FalcoDash, whose founder is a licensed California Realtor, around that exact moment.',
+    constraints: [
+      'Agents present the comparison to sellers, so every figure links back to the page of the offer it came from.',
+      'Offers arrive as different documents with terms in different places, so extraction can’t rely on one fixed layout.',
+      'The seller needs a single number to compare, so net to seller is calculated with commission, credits and costs applied.',
+    ],
+    stack: [
+      // TODO(confirm): taken from the Railway project list ("OPZ - FalcoDash": app + Postgres). Add the AI model/provider used for extraction.
+      'Web app',
+      'AI document extraction',
+      'PostgreSQL',
+      'Hosted on Railway',
+    ],
+    results: resultSlots({
+      hours: 'Agent hours per listing spent building offer comparisons, before vs. after.',
+      errors: 'Extraction corrections needed per offer (share of fields the agent had to fix).',
+      cycle: 'Minutes from receiving the offers to a seller-ready comparison, before vs. after.',
+    }),
     built: [
       'AI extraction of key terms from each offer document.',
       'A side-by-side comparison with net to seller calculated.',
@@ -176,6 +269,22 @@ export const WORK: Work[] = [
     audience: 'A twelve-manager fantasy football league running since 2011.',
     problem:
       'Fifteen seasons of results, records and rules were scattered across two fantasy platforms, old spreadsheets and group chats, and nobody could settle an argument quickly.',
+    context:
+      'A twelve-manager fantasy football league has run since 2011. Its history spans two platforms: ESPN, then Sleeper from 2025.',
+    constraints: [
+      'Fifteen seasons of results had to be combined across two platforms into one history.',
+      'Standings, records and rules all had to live in one place the whole league could check.',
+    ],
+    stack: [
+      // TODO(confirm): data source/API and hosting.
+      'Web app',
+      'League data from ESPN and Sleeper',
+    ],
+    results: resultSlots({
+      hours: 'Commissioner hours per season spent updating records and standings by hand, before vs. after.',
+      errors: 'Disputed or corrected records, before vs. after.',
+      cycle: 'Time for standings and records to update after a week’s games.',
+    }),
     built: [
       'One history across ESPN and Sleeper seasons.',
       'Live standings plus all-time leaderboards and member profiles sortable by titles, win percentage and points.',
