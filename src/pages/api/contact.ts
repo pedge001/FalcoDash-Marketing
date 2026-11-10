@@ -3,6 +3,7 @@ import { db, ensureSchema } from '~/lib/db';
 import { sendLeadConfirmation, sendLeadNotification, type Lead } from '~/lib/email';
 import { INDUSTRY_OPTIONS } from '~/data/site';
 import { clientIp, geoFrom, hashIp } from '~/lib/request';
+import { OFFER, REVENUE_LABELS, STUCK_OPTIONS } from '~/data/cashflow';
 
 export const prerender = false;
 
@@ -27,6 +28,51 @@ function parseAttribution(raw: string): Record<string, string> {
   }
 }
 
+/** Parses a dollar amount typed with or without "$" and commas. Returns null when empty, NaN when invalid. */
+function money(raw: string): number | null {
+  const s = raw.replace(/[$,\s]/g, '');
+  if (!s) return null;
+  if (!/^\d+(\.\d{1,2})?$/.test(s)) return NaN;
+  return Number(s);
+}
+const usd = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+
+function parseIntake(form: FormData): { message: string } | { error: string } {
+  const business = clip(form.get('q_business'), 2000);
+  const revenue = clip(form.get('revenue'), 40);
+  const openAr = money(clip(form.get('open_ar'), 40));
+  const ar90 = money(clip(form.get('ar_over_90'), 40));
+  const daysRaw = clip(form.get('days_to_paid'), 10);
+  const days = daysRaw ? Number(daysRaw) : null;
+  const calcDaysRaw = clip(form.get('calc_days'), 10);
+  const calcDays = calcDaysRaw && /^\d{1,4}$/.test(calcDaysRaw) ? Number(calcDaysRaw) : null;
+  const invoicing = clip(form.get('q_invoicing'), 2000);
+  const stuck = form.getAll('stuck').map((v) => (typeof v === 'string' ? v : '')).filter((v) => (STUCK_OPTIONS as readonly string[]).includes(v));
+  const oneThing = clip(form.get('q_one_thing'), 1000);
+
+  if (business.length < 3) return { error: 'Please tell us what your business does and roughly how many people work there.' };
+  if (!REVENUE_LABELS.includes(revenue)) return { error: 'Please choose your annual revenue range.' };
+  if (openAr === null || Number.isNaN(openAr)) return { error: 'Please enter your total open AR as a dollar amount.' };
+  if (ar90 !== null && Number.isNaN(ar90)) return { error: 'Please enter AR over 90 days as a dollar amount, or leave it blank.' };
+  if (ar90 !== null && ar90 > openAr) return { error: "AR over 90 days can't be more than your total open AR." };
+  if (days !== null && !(Number.isInteger(days) && days >= 0 && days <= 3650)) return { error: 'Please enter the average days to get paid as a whole number, or leave it blank.' };
+
+  const lines = [
+    `${OFFER.name}: intake`,
+    '',
+    `1. What the business does and team size: ${business}`,
+    `2. Annual revenue range: ${revenue}`,
+    `3. Total open AR: ${usd(openAr)}`,
+    `4. AR over 90 days: ${ar90 === null ? '-' : usd(ar90)}`,
+    `5. Average days from finishing a job to getting paid: ${days === null ? '-' : days}`,
+    `6. How invoices go out and who follows up: ${invoicing || '-'}`,
+    `7. Where work or money gets stuck most: ${stuck.length ? stuck.join(', ') : '-'}`,
+    `8. If one thing ran itself next month: ${oneThing || '-'}`,
+  ];
+  if (calcDays !== null) lines.push('', `From the AR calculator: average days from invoice to paid: ${calcDays}`);
+  return { message: lines.join('\n') };
+}
+
 export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
   const wantsJson = (request.headers.get('accept') || '').includes('application/json');
   const fail = (status: number, error: string) =>
@@ -47,6 +93,7 @@ export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
   if (t && Date.now() - t < 2500) return done();
 
   const industry = clip(form.get('industry'), 80);
+  const isIntake = form.has('q_business');
   const lead: Lead = {
     name: clip(form.get('name'), 120),
     email: clip(form.get('email'), 200).toLowerCase(),
@@ -60,7 +107,14 @@ export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
 
   if (!lead.name) return fail(422, 'Please enter your name.');
   if (!EMAIL_RE.test(lead.email)) return fail(422, 'Please enter a valid email address.');
-  if (lead.message.length < 5) return fail(422, 'Please tell us a little about what you want to automate.');
+  if (isIntake) {
+    // 90 Day Cash Flow Fix intake: the answers become the lead's message, so they show up in
+    // /admin and the notification email without a schema change.
+    const intake = parseIntake(form);
+    if ('error' in intake) return fail(422, intake.error);
+    lead.message = intake.message;
+    lead.offer = 'cash-flow-fix';
+  } else if (lead.message.length < 5) return fail(422, 'Please tell us a little about what you want to automate.');
 
   let ip = 'unknown';
   try { ip = clientIp(request, clientAddress); } catch { ip = clientIp(request); }

@@ -23,6 +23,8 @@ interface Props {
   noindex?: boolean;
   article?: { published: Date; modified: Date; section?: string };
   dateModified?: string;
+  /** Overrides the header button (defaults to the free audit). */
+  headerCta?: { href: string; label: string; mobileLabel?: string };
 }
 
 const {
@@ -38,6 +40,7 @@ const {
   noindex = false,
   article,
   dateModified,
+  headerCta,
 } = Astro.props;
 
 const canonical = abs(path);
@@ -99,7 +102,7 @@ const ld = graph(
   <Analytics />
 </head>
 <body>
-  <Header />
+  <Header cta={headerCta} />
   <main id="main">
     <slot />
   </main>

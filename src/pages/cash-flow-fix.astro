@@ -1,0 +1,457 @@
+---
+// 90 Day Cash Flow Fix: paid-search landing page. Facts come from src/data/cashflow.ts, and every
+// claim on this page is one Patrick confirmed. Anything not yet confirmed shows as a visible
+// [need: ...] placeholder (styled .need) instead of invented copy. Remove each one before launch.
+//
+// Flow: hero -> open AR calculator (no email gate, runs in the browser, stores nothing) -> proof ->
+// what's included -> guarantee -> price and steps -> intake form -> booking step after submit.
+// The intake posts to the existing /api/contact handler with source=cash-flow-fix.
+import Base from '~/layouts/Base.astro';
+import { SITE } from '~/data/site';
+import { OFFER, PROOF, REVENUE_RANGES, STUCK_OPTIONS } from '~/data/cashflow';
+import { abs, ORG_ID } from '~/lib/schema';
+
+const path = OFFER.path;
+const title = '90 Day Cash Flow Fix | Faster Cash for SoCal Businesses | FalcoDash';
+const description =
+  'Fix how you invoice and collect. Faster cash in 90 days for Southern California businesses. Reduce your AR or your money back. Based in Redlands.';
+const crumbs = [{ name: 'Home', path: '/' }, { name: OFFER.name, path }];
+const subhead = "We fix how you invoice and collect, so the money you've already earned reaches the bank. Reduce your AR or your money back.";
+
+// Booking link for the step after the intake form. Set PUBLIC_BOOKING_URL to show a real button.
+const bookingUrl = (import.meta.env.PUBLIC_BOOKING_URL || '').trim();
+
+const INCLUDED = [
+  'Week-1 accounts to call first',
+  'Collections follow-up system',
+  'Weekly cash dashboard',
+  'Collections playbook and scripts',
+];
+
+const STEPS = [
+  { k: 'Step 01', h: '20-minute call', p: 'Tell us how invoicing and collections run today, and we will see whether the offer fits.' },
+  { k: 'Step 02', h: 'System access and a day-1 AR baseline', p: 'You give us access to your systems. We record your AR over 90 days as the day-1 baseline.' },
+  { k: 'Step 03', h: '90 days of work', p: 'We fix how you invoice and collect, starting with invoicing and accounts receivable.' },
+  { k: 'Step 04', h: 'The day-90 AR check', p: 'We measure AR over 90 days again and compare it with day 1. If it is not lower, the guarantee applies.' },
+];
+
+const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
+
+const schema = [
+  {
+    '@type': 'Service',
+    '@id': `${abs(path)}#service`,
+    name: OFFER.name,
+    serviceType: 'Invoicing and accounts receivable improvement',
+    description: subhead,
+    url: abs(path),
+    provider: { '@id': ORG_ID },
+    areaServed: { '@type': 'AdministrativeArea', name: 'Southern California' },
+    audience: { '@type': 'BusinessAudience', audienceType: 'Southern California businesses with $2M+ in annual revenue' },
+    offers: {
+      '@type': 'Offer',
+      url: abs(path),
+      priceCurrency: 'USD',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: OFFER.pricePerMonth,
+        priceCurrency: 'USD',
+        unitCode: 'MON',
+        billingDuration: { '@type': 'QuantitativeValue', value: OFFER.months, unitCode: 'MON' },
+      },
+    },
+  },
+];
+---
+<Base
+  title={title}
+  description={description}
+  path={path}
+  breadcrumbs={crumbs}
+  schema={schema}
+  ogImage="/og/cash-flow-fix.png"
+  ogImageAlt="FalcoDash: 90 Day Cash Flow Fix. Faster cash in 90 days."
+  headerCta={{ href: '#intake', label: 'Book a 20-minute call' }}
+>
+  <!-- 1. Hero -->
+  <section class="wrap cff-hero">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">{OFFER.name} · Southern California</p>
+        <h1 class="display hero-h">Faster cash in <span class="butter">90 days.</span></h1>
+        <p class="lede hero-lede" data-answer>{subhead}</p>
+        <div class="hero-actions">
+          <a href="#calculator" class="btn btn-primary" data-cta="hero-calculator"><span>See what your AR is costing you</span><span aria-hidden="true">↓</span></a>
+          <a href="#intake" class="btn btn-outline" data-cta="hero-call"><span>Book a 20-minute call</span><span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <aside class="seal" aria-label="The guarantee">
+        <p class="seal-k">The guarantee</p>
+        <p class="seal-h">{OFFER.guarantee}</p>
+        <p class="seal-p">Measured on AR over 90 days, on day 1 and on day 90.</p>
+        <a href="#guarantee" class="link-arrow">How it works ↓</a>
+      </aside>
+    </div>
+    <ul class="facts" aria-label="At a glance">
+      <li><span class="facts-k">For</span>Southern California businesses with $2M+ in annual revenue</li>
+      <li><span class="facts-k">Starts with</span>Invoicing and accounts receivable</li>
+      <li><span class="facts-k">Based in</span>Redlands, CA</li>
+    </ul>
+  </section>
+
+  <!-- 2. AR calculator -->
+  <section id="calculator" class="wrap section-tight" aria-labelledby="calc-h">
+    <div class="sec-head">
+      <h2 id="calc-h" class="h2">What is your AR costing you?</h2>
+      <span class="meta">AR calculator</span>
+    </div>
+    <p class="calc-intro">Free to use, with no email needed. It runs in your browser, and nothing you type is stored or sent.</p>
+
+    <div class="calc" data-ar-calc>
+      <form class="calc-inputs" novalidate aria-label="Your numbers" onsubmit="return false">
+        <label class="field">
+          <span>Annual revenue range</span>
+          <select class="input" name="revenue" data-calc="revenue">
+            <option value="">Choose a range</option>
+            {REVENUE_RANGES.map((r) => <option value={r.label} data-mid={r.mid}>{r.label}</option>)}
+          </select>
+        </label>
+        <label class="field">
+          <span>Total open AR</span>
+          <span class="money"><span aria-hidden="true">$</span><input class="input" name="open_ar" inputmode="decimal" autocomplete="off" placeholder="0" data-calc="open" data-money aria-describedby="calc-open-err" /></span>
+          <span class="field-err" id="calc-open-err" hidden></span>
+        </label>
+        <label class="field">
+          <span>AR over 90 days</span>
+          <span class="money"><span aria-hidden="true">$</span><input class="input" name="ar_over_90" inputmode="decimal" autocomplete="off" placeholder="0" data-calc="ar90" data-money aria-describedby="calc-ar90-err" /></span>
+          <span class="field-err" id="calc-ar90-err" hidden></span>
+        </label>
+        <label class="field">
+          <span>Average days from invoice to paid</span>
+          <input class="input" name="days" type="number" min="0" max="3650" step="1" inputmode="numeric" placeholder="0" data-calc="days" aria-describedby="calc-days-err" />
+          <span class="field-err" id="calc-days-err" hidden></span>
+        </label>
+        <p class="calc-how">How the estimate works: days of revenue sitting unpaid is your total open AR divided by a day of revenue (annual revenue ÷ 365), using the midpoint of your range.</p>
+      </form>
+
+      <div class="calc-out" aria-live="polite">
+        <div class="out-row">
+          <p class="out-k">Cash tied up in AR over 90 days</p>
+          <p class="out-v" data-out="ar90">—</p>
+        </div>
+        <div class="out-row out-main">
+          <p class="out-k">If you cut AR in half</p>
+          <p class="out-v" data-out="half">—</p>
+          <p class="out-note">cash you could free up</p>
+        </div>
+        <div class="out-row">
+          <p class="out-k">Days of revenue sitting unpaid</p>
+          <p class="out-v" data-out="dso">—</p>
+          <p class="out-note" data-out="dso-note">An estimate based on your revenue range.</p>
+        </div>
+        <div class="out-foot">
+          <p class="out-proof">In 2024, an architecture firm cut its AR in half in 90 days.</p>
+          <a href="#intake" class="btn btn-primary full" data-calc-cta>
+            <span data-cta-label data-full="Find where your cash is stuck: book a 20-minute call" data-soft="Talk to us about your cash flow">Find where your cash is stuck: book a 20-minute call</span><span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Proof -->
+  <section class="wrap section-tight" aria-labelledby="proof-h">
+    <div class="sec-head"><h2 id="proof-h" class="h2">Results from past engagements</h2></div>
+    <div class="grid-cells proof" style="--min:320px">
+      {PROOF.map((p) => (
+        <figure class="cell proof-cell">
+          <p class="proof-meta"><span>{p.year}</span><span>{p.firm}</span></p>
+          <p class="proof-fig">{p.figure}<span class="proof-fig-l">{p.figureLabel}</span></p>
+          <figcaption>{p.text}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <!-- 4. What's included -->
+  <section class="wrap section-tight" aria-labelledby="inc-h">
+    <div class="sec-head">
+      <h2 id="inc-h" class="h2">What's included</h2>
+      <span class="need">[need: confirm stack]</span>
+    </div>
+    <div class="grid-cells" style="--min:260px">
+      {INCLUDED.map((t, i) => (
+        <div class="cell inc-cell">
+          <span class="num">{String(i + 1).padStart(2, '0')}</span>
+          <h3>{t}</h3>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- 5. Guarantee -->
+  <section id="guarantee" class="band" aria-labelledby="g-h">
+    <div class="wrap section g-grid">
+      <div>
+        <p class="g-k">The guarantee</p>
+        <h2 id="g-h" class="display-sm">{OFFER.guarantee}</h2>
+      </div>
+      <div class="g-body">
+        <p>We measure your AR over 90 days on day 1 and again on day 90.</p>
+        <p>If it isn't lower on day 90 than on day 1, you choose: we keep working until it is, or you get your money back.</p>
+        <p class="g-req"><strong>System access is required.</strong> It's how we set the day-1 baseline and run the day-90 check.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Price and how it works -->
+  <section class="wrap section" aria-labelledby="price-h">
+    <div class="sec-head"><h2 id="price-h" class="h2">Price and how it works</h2></div>
+    <div class="price-grid">
+      <div class="price">
+        <p class="price-k">Price</p>
+        <p class="price-v">{usd(OFFER.pricePerMonth)}<span>/month</span></p>
+        <p class="price-p">for 90 days, all-inclusive.</p>
+        <p class="price-g">{OFFER.guarantee}</p>
+      </div>
+      <ol class="timeline">
+        {STEPS.map((s) => (
+          <li>
+            <span class="tl-k">{s.k}</span>
+            <div>
+              <h3>{s.h}</h3>
+              <p>{s.p}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- 7. Intake form and booking -->
+  <section id="intake" class="wrap section-tight" aria-labelledby="intake-h">
+    <div class="intake-grid">
+      <div class="intake-copy">
+        <div class="rule-top">
+          <h2 id="intake-h" class="h2">Book your <span class="nowrap">20-minute</span> call</h2>
+        </div>
+        <p class="body intake-lede">Answer the first three questions, then pick a time. The rest is optional, but it helps us come to the call prepared.</p>
+        <ol class="intake-steps">
+          <li><span>1</span>Answer a few questions</li>
+          <li><span>2</span>Pick a time for the call</li>
+          <li><span>3</span>We talk for 20 minutes</li>
+        </ol>
+        <div class="stack intake-contact">
+          <span class="muted">Prefer the phone?</span>
+          <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        </div>
+      </div>
+
+      <div class="contact-form-wrap" data-form-wrap>
+        <form class="form intake-form" id="intake-form" method="post" action="/api/contact" data-contact-form data-intake-form novalidate>
+          <p class="form-legend full">Questions 1 to 3 are required.</p>
+
+          <label class="field q full">
+            <span><b>1.</b> What does your business do, and roughly how many people work there?</span>
+            <textarea class="input" name="q_business" rows="3" required minlength="3" maxlength="2000"></textarea>
+          </label>
+          <label class="field q">
+            <span><b>2.</b> Annual revenue range</span>
+            <select class="input" name="revenue" required>
+              <option value="">Choose a range</option>
+              {REVENUE_RANGES.map((r) => <option value={r.label}>{r.label}</option>)}
+            </select>
+          </label>
+          <label class="field q">
+            <span><b>3.</b> Total open AR ($)</span>
+            <span class="money"><span aria-hidden="true">$</span><input class="input" name="open_ar" inputmode="decimal" required data-money pattern="\$?[0-9][0-9,]*(\.[0-9]{1,2})?" title="A dollar amount, like 250,000" /></span>
+          </label>
+
+          <p class="form-sep full">Optional</p>
+
+          <label class="field q">
+            <span><b>4.</b> How much of your AR is over 90 days? <span class="opt">(optional)</span></span>
+            <span class="money"><span aria-hidden="true">$</span><input class="input" name="ar_over_90" inputmode="decimal" data-money pattern="\$?[0-9][0-9,]*(\.[0-9]{1,2})?" title="A dollar amount, like 40,000" /></span>
+          </label>
+          <label class="field q">
+            <span><b>5.</b> Average days from finishing a job to getting paid <span class="opt">(optional)</span></span>
+            <input class="input" name="days_to_paid" type="number" min="0" max="3650" step="1" inputmode="numeric" />
+          </label>
+          <label class="field q full">
+            <span><b>6.</b> How do invoices go out today, and who follows up when one is late? <span class="opt">(optional)</span></span>
+            <textarea class="input" name="q_invoicing" rows="3" maxlength="2000"></textarea>
+          </label>
+          <fieldset class="field q full pick">
+            <legend><b>7.</b> Where does work or money get stuck most? <span class="opt">(optional)</span></legend>
+            <div class="pick-row">
+              {STUCK_OPTIONS.map((o) => <label class="pick-opt"><input type="checkbox" name="stuck" value={o} /><span>{o}</span></label>)}
+            </div>
+          </fieldset>
+          <label class="field q full">
+            <span><b>8.</b> If one thing ran itself next month, what would it be? <span class="opt">(optional)</span></span>
+            <input class="input" name="q_one_thing" maxlength="1000" />
+          </label>
+
+          <p class="form-sep full">Your details</p>
+
+          <label class="field"><span>Name</span><input class="input" name="name" autocomplete="name" required maxlength="120" /></label>
+          <label class="field"><span>Email</span><input class="input" type="email" name="email" autocomplete="email" required maxlength="200" /></label>
+          <label class="field"><span>Phone <span class="opt">(optional)</span></span><input class="input" type="tel" name="phone" autocomplete="tel" maxlength="40" /></label>
+          <label class="field"><span>Company <span class="opt">(optional)</span></span><input class="input" name="company" autocomplete="organization" maxlength="160" /></label>
+
+          <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+          <input type="hidden" name="source" value={OFFER.source} />
+          <input type="hidden" name="calc_days" value="" />
+          <input type="hidden" name="t" value="" />
+          <input type="hidden" name="utm" value="" />
+          <input type="hidden" name="sid" value="" />
+          <input type="hidden" name="vid" value="" />
+          <button type="submit" class="btn btn-primary full"><span>Send and pick a time</span><span aria-hidden="true">→</span></button>
+          <p class="form-status full" role="status" aria-live="polite" hidden></p>
+          <p class="form-note full">We reply within one business day. We never share your details. See our <a href="/privacy">privacy policy</a>.</p>
+        </form>
+
+        <div class="success-box booking" hidden tabindex="-1">
+          <p class="num">Step 2 of 2</p>
+          <h3>Thanks. Now pick a time for your 20-minute call.</h3>
+          <p class="body">We have your answers, and a confirmation is on its way to your inbox.</p>
+          {bookingUrl ? (
+            <a href={bookingUrl} class="btn btn-primary" rel="noopener" target="_blank" data-booking><span>Pick a time</span><span aria-hidden="true">↗</span></a>
+          ) : (
+            <p class="need">[need: booking link]</p>
+          )}
+          <p class="body">Or call <a href={`tel:${SITE.phone}`}>{SITE.phoneDisplay}</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { initContactForms } from '~/scripts/contact';
+  import { initArCalculator } from '~/scripts/ar-calc';
+  initContactForms();
+  initArCalculator();
+</script>
+
+<style>
+  .butter { color: var(--butter); }
+  .nowrap { white-space: nowrap; }
+
+  /* Hero */
+  .cff-hero { padding-top: clamp(48px, 7vw, 104px); padding-bottom: clamp(48px, 6vw, 88px); }
+  .hero-grid { display: grid; gap: 48px; align-items: end; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); }
+  .hero-h { margin-top: 20px; font-size: clamp(48px, 8vw, 120px); }
+  .hero-lede { margin-top: 28px; max-width: 640px; font-size: clamp(18px, 1.6vw, 21px); }
+  .seal { border: 2px solid var(--butter); padding: 28px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .seal-k { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--butter); }
+  .seal-h { font-stretch: 125%; font-weight: 800; font-size: 30px; line-height: 1.02; letter-spacing: -0.025em; text-wrap: balance; }
+  .seal-p { font-size: 15px; line-height: 1.5; color: var(--text-3); }
+  .facts { list-style: none; margin: 56px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); border-top: 2px solid var(--white); }
+  .facts li { padding: 16px 24px 0 0; font-size: 16px; line-height: 1.45; color: var(--text-2); display: flex; flex-direction: column; gap: 6px; }
+  .facts-k { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ice); }
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .seal { max-width: 520px; }
+  }
+
+  /* Calculator */
+  #calculator, #intake, #guarantee { scroll-margin-top: calc(var(--header-h) + 16px); }
+  .calc-intro { font-size: 17px; line-height: 1.55; color: var(--text-3); margin: -24px 0 32px; max-width: 640px; }
+  .calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); border: 2px solid var(--line); }
+  .calc-inputs { display: grid; gap: 22px; padding: clamp(24px, 3vw, 40px); align-content: start; }
+  .calc-out { background: var(--surface); border-left: 2px solid var(--line); display: flex; flex-direction: column; }
+  .out-row { padding: 22px clamp(24px, 3vw, 40px); border-bottom: 2px solid var(--line); }
+  .out-k { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ice); }
+  .out-v { font-stretch: 125%; font-weight: 800; font-size: clamp(34px, 3.6vw, 48px); letter-spacing: -0.03em; line-height: 1.05; margin-top: 8px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .out-main .out-v { color: var(--butter); font-size: clamp(40px, 4.6vw, 64px); }
+  .out-note { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .out-foot { padding: 24px clamp(24px, 3vw, 40px) clamp(24px, 3vw, 36px); display: flex; flex-direction: column; gap: 18px; margin-top: auto; }
+  .out-proof { font-size: 16px; line-height: 1.5; color: var(--text-2); border-left: 2px solid var(--butter); padding-left: 12px; }
+  .out-foot .btn { justify-content: space-between; text-align: left; }
+  .money { position: relative; display: block; }
+  .money > span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 17px; letter-spacing: 0; pointer-events: none; }
+  .money .input { padding-left: 30px; }
+  .calc-how { margin-top: auto; padding-top: 18px; border-top: 2px solid var(--line); font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .field-err { font-size: 14px; letter-spacing: 0; text-transform: none; color: #ff8a7a; }
+  .calc .input[aria-invalid='true'] { border-color: #ff8a7a; }
+  @media (max-width: 860px) {
+    .calc { grid-template-columns: 1fr; }
+    .calc-out { border-left: 0; border-top: 2px solid var(--line); }
+  }
+
+  /* Proof */
+  .proof-cell { margin: 0; padding: 32px 28px 36px; gap: 18px; }
+  .proof-meta { display: flex; gap: 12px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ice); }
+  .proof-meta span + span::before { content: '·'; margin-right: 12px; color: var(--muted); }
+  .proof-fig { font-stretch: 125%; font-weight: 800; font-size: clamp(64px, 8vw, 112px); line-height: 0.9; letter-spacing: -0.04em; color: var(--butter); display: flex; flex-direction: column; gap: 10px; }
+  .proof-fig-l { font-stretch: 100%; font-size: 16px; font-weight: 700; letter-spacing: 0; color: var(--white); text-transform: lowercase; }
+  .proof-cell figcaption { font-size: 18px; line-height: 1.55; color: var(--text-2); text-wrap: pretty; }
+
+  /* Included */
+  .inc-cell { min-height: 180px; }
+  .inc-cell h3 { margin-top: auto; }
+
+  /* Placeholder for unconfirmed content. Remove before launch. */
+  .need { display: inline-block; border: 2px dashed var(--butter); color: var(--butter); padding: 6px 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; }
+
+  /* Guarantee */
+  .g-grid { display: grid; gap: 48px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: end; }
+  .g-k { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 20px; }
+  .g-body { border-top: 2px solid var(--black); padding-top: 20px; display: flex; flex-direction: column; gap: 14px; font-size: 19px; line-height: 1.55; }
+  .g-req { font-size: 17px; }
+
+  /* Price */
+  .price-grid { display: grid; gap: 48px; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; }
+  .price { border: 2px solid var(--ice); padding: 32px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .price-k { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ice); }
+  .price-v { font-stretch: 125%; font-weight: 800; font-size: clamp(48px, 5.6vw, 76px); line-height: 1; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+  .price-v span { font-size: 0.36em; letter-spacing: -0.01em; color: var(--text-2); margin-left: 4px; }
+  .price-p { font-size: 19px; color: var(--text-2); }
+  .price-g { margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--line); font-weight: 700; color: var(--butter); }
+  .timeline { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--white); }
+  .timeline li { display: grid; grid-template-columns: 96px 1fr; gap: 20px; padding: 22px 0; border-bottom: 2px solid var(--line); }
+  .tl-k { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ice); padding-top: 5px; }
+  .timeline h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; }
+  .timeline p { font-size: 16px; line-height: 1.55; color: var(--text-3); margin-top: 6px; }
+  @media (max-width: 860px) {
+    .price-grid { grid-template-columns: 1fr; }
+    .timeline li { grid-template-columns: 1fr; gap: 6px; }
+  }
+
+  /* Intake */
+  .intake-grid { display: grid; gap: 56px; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; }
+  .rule-top { border-top: 2px solid var(--white); padding-top: 16px; }
+  .intake-copy { position: sticky; top: calc(var(--header-h) + 24px); display: flex; flex-direction: column; gap: 24px; }
+  .intake-lede { font-size: 18px; max-width: 460px; }
+  .intake-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; font-size: 17px; }
+  .intake-steps li { display: flex; align-items: center; gap: 14px; }
+  .intake-steps span { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border: 2px solid var(--ice); color: var(--ice); font-weight: 700; font-size: 14px; }
+  .intake-contact { --gap: 6px; font-size: 17px; }
+  .intake-contact a { color: var(--white); text-decoration: none; }
+  .intake-contact a:hover { color: var(--ice); }
+  .form-legend { font-size: 14px; color: var(--muted); }
+  .form-sep { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-top: 2px solid var(--line); padding-top: 14px; margin-top: 8px; }
+  .field.q > span:first-child, .pick legend { font-size: 16px; letter-spacing: 0; text-transform: none; color: var(--white); line-height: 1.4; }
+  .field.q b { color: var(--ice); font-weight: 700; margin-right: 2px; }
+  .field.q .opt { font-size: 14px; }
+  .pick { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .pick legend { padding: 0; margin-bottom: 10px; }
+  .pick-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pick-opt { position: relative; cursor: pointer; }
+  .pick-opt input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .pick-opt span { display: inline-block; padding: 9px 14px; border: 2px solid var(--line-2); font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--text-2); }
+  .pick-opt input:checked + span { border-color: var(--ice); background: var(--ice); color: var(--black); }
+  .pick-opt input:focus-visible + span { outline: 2px solid var(--white); outline-offset: 2px; }
+  .booking { gap: 16px; }
+  .booking .btn { align-self: flex-start; }
+  .booking a:not(.btn) { color: var(--ice); }
+  @media (max-width: 960px) {
+    .intake-grid { grid-template-columns: 1fr; gap: 40px; }
+    .intake-copy { position: static; }
+  }
+  @media (max-width: 560px) {
+    .intake-form { grid-template-columns: 1fr; }
+  }
+</style>

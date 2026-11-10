@@ -12,7 +12,11 @@ export type Lead = {
   source?: string;
   location?: string;
   attribution?: Record<string, string>;
+  /** Set for intake submissions from an offer landing page, e.g. /cash-flow-fix. */
+  offer?: 'cash-flow-fix';
 };
+
+const CFF = '90 Day Cash Flow Fix';
 
 const esc = (s = '') => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -47,19 +51,20 @@ export async function sendLeadNotification(lead: Lead) {
   const attr = lead.attribution && Object.keys(lead.attribution).length
     ? Object.entries(lead.attribution).map(([k, v]) => `${k}=${v}`).join(' · ')
     : '';
+  const kind = lead.offer === 'cash-flow-fix' ? `New ${CFF} intake` : 'New audit request';
   const html = shell(`
-    <h1 style="margin:0 0 16px;font-size:24px">New audit request</h1>
+    <h1 style="margin:0 0 16px;font-size:24px">${kind}</h1>
     <table role="presentation" cellpadding="0" cellspacing="0">
       ${row('Name', lead.name)}${row('Email', lead.email)}${row('Company', lead.company)}${row('Industry', lead.industry)}${row('Phone', lead.phone)}${row('Page', lead.source)}${row('Location', lead.location)}${row('Attribution', attr)}${row('Lead #', lead.id ? String(lead.id) : '')}
     </table>
-    <h2 style="margin:24px 0 8px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#0b6b6b">What they want to automate</h2>
+    <h2 style="margin:24px 0 8px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#0b6b6b">${lead.offer === 'cash-flow-fix' ? 'Intake answers' : 'What they want to automate'}</h2>
     <p style="margin:0;font-size:16px;line-height:1.6;white-space:pre-wrap">${esc(lead.message)}</p>`);
-  const text = `New audit request\n\nName: ${lead.name}\nEmail: ${lead.email}\nCompany: ${lead.company || '-'}\nIndustry: ${lead.industry || '-'}\nPhone: ${lead.phone || '-'}\nPage: ${lead.source || '-'}\n${attr ? `Attribution: ${attr}\n` : ''}\n${lead.message}`;
+  const text = `${kind}\n\nName: ${lead.name}\nEmail: ${lead.email}\nCompany: ${lead.company || '-'}\nIndustry: ${lead.industry || '-'}\nPhone: ${lead.phone || '-'}\nPage: ${lead.source || '-'}\n${attr ? `Attribution: ${attr}\n` : ''}\n${lead.message}`;
   const { error } = await r.emails.send({
     from: FROM(),
     to: TO(),
     replyTo: lead.email,
-    subject: `Audit request: ${lead.name}${lead.company ? ` (${lead.company})` : ''}`,
+    subject: `${lead.offer === 'cash-flow-fix' ? `${CFF} intake` : 'Audit request'}: ${lead.name}${lead.company ? ` (${lead.company})` : ''}`,
     html,
     text,
     tags: [{ name: 'type', value: 'lead_notification' }],
@@ -72,18 +77,22 @@ export async function sendLeadConfirmation(lead: Lead) {
   const r = resend();
   if (!r) return;
   const first = lead.name.split(/\s+/)[0] || 'there';
+  const cff = lead.offer === 'cash-flow-fix';
+  const next = cff
+    ? `We'll reply within one business day to set up your 20-minute call about the ${CFF}. On the call we'll look at how you invoice and collect today.`
+    : `We'll reply within one business day to schedule your free automation audit. In the audit we'll walk through how your team works today and send you a written shortlist of what to automate first.`;
   const html = shell(`
     <h1 style="margin:0 0 16px;font-size:24px">Thanks, ${esc(first)}. We have your request.</h1>
-    <p style="margin:0 0 14px;font-size:16px;line-height:1.6">We'll reply within one business day to schedule your free automation audit. In the audit we'll walk through how your team works today and send you a written shortlist of what to automate first.</p>
+    <p style="margin:0 0 14px;font-size:16px;line-height:1.6">${esc(next)}</p>
     <p style="margin:0 0 14px;font-size:16px;line-height:1.6">If anything is urgent, reply to this email or call <a href="tel:${SITE.phone}" style="color:#0b6b6b">${esc(SITE.phoneDisplay)}</a>.</p>
     <p style="margin:24px 0 0;font-size:14px;color:#666">What you sent us:</p>
     <p style="margin:6px 0 0;font-size:15px;line-height:1.6;white-space:pre-wrap;border-left:3px solid #b2ffff;padding-left:12px">${esc(lead.message)}</p>`);
-  const text = `Thanks, ${first}. We have your request.\n\nWe'll reply within one business day to schedule your free automation audit.\n\nIf anything is urgent, reply to this email or call ${SITE.phoneDisplay}.\n\n— FalcoDash\n${SITE.url}`;
+  const text = `Thanks, ${first}. We have your request.\n\n${next}\n\nIf anything is urgent, reply to this email or call ${SITE.phoneDisplay}.\n\n— FalcoDash\n${SITE.url}`;
   const { error } = await r.emails.send({
     from: FROM(),
     to: [lead.email],
     replyTo: TO()[0],
-    subject: 'We have your FalcoDash audit request',
+    subject: cff ? `We have your ${CFF} intake` : 'We have your FalcoDash audit request',
     html,
     text,
     tags: [{ name: 'type', value: 'lead_confirmation' }],

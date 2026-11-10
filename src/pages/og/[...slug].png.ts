@@ -16,6 +16,7 @@ export const getStaticPaths = (async () => {
     p('blog', 'FalcoDash Blog', 'Guides to AI, automation and better data.'),
     p('about', 'About', 'Most companies already have the data they need.'),
     p('faq', 'FAQ', 'Questions, answered.'),
+    p('cash-flow-fix', '90 Day Cash Flow Fix · Southern California', 'Faster cash in 90 days.'),
     p('free-audit', 'Free · No obligation', 'Free AI automation audit'),
     p('contact', 'Free automation audit', "Tell us what's slowing your team down."),
     p('how-we-work', 'How we work', 'Audit. Build. Run.'),

@@ -1,6 +1,10 @@
 ---
 import Mark from './Mark.astro';
 import { NAV, SITE } from '~/data/site';
+// Optional override for the header button. Every page uses the free-audit default except offer
+// landing pages, which point the button at their own form.
+interface Props { cta?: { href: string; label: string; mobileLabel?: string } }
+const { cta = { href: '/free-audit', label: 'Free audit', mobileLabel: 'Get a free automation audit' } } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
 ---
@@ -14,9 +18,9 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <ul class="nav-links" id="nav-links">
       {NAV.map((n) => <li><a href={n.href} aria-current={current(n.href)}>{n.label}</a></li>)}
-      <li class="mobile-cta"><a href="/free-audit">Get a free automation audit →</a></li>
+      <li class="mobile-cta"><a href={cta.href}>{cta.mobileLabel ?? cta.label} →</a></li>
     </ul>
-    <a href="/free-audit" class="btn btn-primary btn-sm nav-cta">Free audit <span aria-hidden="true">→</span></a>
+    <a href={cta.href} class="btn btn-primary btn-sm nav-cta">{cta.label} <span aria-hidden="true">→</span></a>
   </nav>
 </header>
 <script>
@@ -28,6 +32,10 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
     toggle.setAttribute('aria-expanded', String(open));
     toggle.textContent = open ? 'Close' : 'Menu';
   });
+  // Close the mobile menu after an in-page jump (e.g. "#intake" on offer pages).
+  header?.querySelectorAll<HTMLAnchorElement>('.nav-links a[href^="#"]').forEach((a) =>
+    a.addEventListener('click', () => { if (header.dataset.open === 'true') toggle?.click(); }),
+  );
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && header?.dataset.open === 'true') toggle?.click();
   });
