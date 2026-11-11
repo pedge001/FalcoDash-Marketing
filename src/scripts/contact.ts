@@ -54,6 +54,11 @@ export function initContactForms() {
         w.gtag?.('event', 'generate_lead', { form_source: source });
         w.clarity?.('event', 'generate_lead');
         w.__fdTrack?.('generate_lead', { form_source: source });
+        // Secondary Ads conversion: only after a successful calculator email submit.
+        if (form.hasAttribute('data-ar-results-form')) {
+          const { fireAdsEvent } = await import('~/scripts/ads-conversions');
+          fireAdsEvent('ar_calculator_completed', { form_source: source });
+        }
       } catch (err) {
         showError((err as Error).message);
       } finally {

@@ -107,7 +107,26 @@ export const POST: APIRoute = async ({ request, clientAddress, redirect }) => {
 
   if (!lead.name) return fail(422, 'Please enter your name.');
   if (!EMAIL_RE.test(lead.email)) return fail(422, 'Please enter a valid email address.');
-  if (isIntake) {
+  const isCalcResults = lead.source === OFFER.source && form.has('monthly_revenue') && !isIntake;
+  if (isCalcResults) {
+    const monthly = money(clip(form.get('monthly_revenue'), 40));
+    const daysRaw = clip(form.get('days_to_paid'), 10);
+    const days = daysRaw ? Number(daysRaw) : NaN;
+    if (monthly === null || Number.isNaN(monthly) || monthly <= 0) {
+      return fail(422, 'Please enter your monthly revenue as a dollar amount.');
+    }
+    if (!(Number.isInteger(days) && days >= 0 && days <= 3650)) {
+      return fail(422, 'Please enter the average days to get paid as a whole number.');
+    }
+    const tied = (monthly / 30) * days;
+    lead.message = [
+      `${OFFER.name}: AR calculator results`,
+      `Monthly revenue: ${usd(monthly)}`,
+      `Average days to get paid: ${days}`,
+      `Cash tied up in AR (monthly revenue ÷ 30 × days): ${usd(tied)}`,
+    ].join('\n');
+    lead.offer = 'cash-flow-fix';
+  } else if (isIntake) {
     // 90 Day Cash Flow Fix intake: the answers become the lead's message, so they show up in
     // /admin and the notification email without a schema change.
     const intake = parseIntake(form);

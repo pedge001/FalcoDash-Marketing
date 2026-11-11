@@ -11,6 +11,23 @@ export const OFFER = {
   guarantee: 'Reduce your AR or your money back.',
 } as const;
 
+/** Headline variants for paid-search ad groups. The default is server-rendered
+ *  in the page HTML for crawlers; the client swaps on ?ag= after load. */
+export const HEADLINES = {
+  default: 'Faster cash in 90 days.',
+  'paid-faster': 'Get paid faster on unpaid invoices.',
+  'ar-collections': 'Get AR and collections under control.',
+} as const;
+
+export type HeadlineKey = keyof typeof HEADLINES;
+
+/** Cash tied up in AR = monthly revenue ÷ 30 × average days to get paid. */
+export const AR_FORMULA = 'Cash tied up in AR = monthly revenue ÷ 30 × average days to get paid.';
+
+export function cashTiedUp(monthlyRevenue: number, daysToPaid: number): number {
+  return (monthlyRevenue / 30) * daysToPaid;
+}
+
 /** Annual revenue ranges, shared by the calculator and the intake form. `mid` is the midpoint the
  *  calculator uses to estimate days of revenue sitting unpaid. */
 export const REVENUE_RANGES = [

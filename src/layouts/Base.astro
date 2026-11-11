@@ -3,6 +3,8 @@ import '~/styles/global.css';
 import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
 import Analytics from '~/components/Analytics.astro';
+import GoogleTag from '~/components/GoogleTag.astro';
+import ConsentBanner from '~/components/ConsentBanner.astro';
 import { SITE } from '~/data/site';
 import fontUrl from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
 import { abs, graph, organization, website, webPage, breadcrumbs as crumbsLd } from '~/lib/schema';
@@ -99,6 +101,7 @@ const ld = graph(
 
   <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   <slot name="head" />
+  <GoogleTag />
   <Analytics />
 </head>
 <body>
@@ -107,5 +110,6 @@ const ld = graph(
     <slot />
   </main>
   <Footer />
+  <ConsentBanner />
 </body>
 </html>
