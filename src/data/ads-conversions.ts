@@ -15,6 +15,8 @@ export const GOOGLE_ADS = {
     call_booked: 'CALL_BOOKED_LABEL',
     // tel: clicks. Sheet placeholder send_to: AW-XXXXXXXXX/WEBSITE_CALL_CLICK_LABEL
     tel_click: 'WEBSITE_CALL_CLICK_LABEL',
+    // /free-audit form submitted successfully. Placeholder until the conversion action exists.
+    free_audit_submitted: 'FREE_AUDIT_SUBMITTED_LABEL',
   },
 };
 
