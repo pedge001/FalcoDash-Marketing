@@ -15,15 +15,21 @@ const CANONICAL_HOST = (process.env.SITE_URL ? new URL(process.env.SITE_URL).hos
 // Analytics hosts: Google Analytics 4, Microsoft Clarity, Cloudflare Web Analytics.
 const ANALYTICS_SCRIPTS = 'https://www.googletagmanager.com https://www.clarity.ms https://*.clarity.ms https://static.cloudflareinsights.com';
 const ANALYTICS_CONNECT = 'https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com https://cloudflareinsights.com';
+// Google Ads (gtag AW-944429747): conversion, remarketing and Consent Mode pings. Without these the
+// browser blocks the hits (verified in headless Chrome 2026-11-12: viewthroughconversion script,
+// /ccm/collect and /rmkt/collect were refused by script-src / connect-src).
+const ADS_SCRIPTS = 'https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com';
+const ADS_CONNECT = 'https://www.googleadservices.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.google.com https://google.com https://pagead2.googlesyndication.com';
+const ADS_FRAMES = 'https://td.doubleclick.net https://www.googletagmanager.com';
 
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://unpkg.com ${ANALYTICS_SCRIPTS}`,
+  `script-src 'self' 'unsafe-inline' https://unpkg.com ${ANALYTICS_SCRIPTS} ${ADS_SCRIPTS}`,
   "style-src 'self' 'unsafe-inline' https://unpkg.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' https://api.github.com https://unpkg.com ${ANALYTICS_CONNECT}`,
-  "frame-src 'self'",
+  `connect-src 'self' https://api.github.com https://unpkg.com ${ANALYTICS_CONNECT} ${ADS_CONNECT}`,
+  `frame-src 'self' ${ADS_FRAMES}`,
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self' https://github.com",
