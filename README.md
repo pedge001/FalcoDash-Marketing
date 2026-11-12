@@ -122,7 +122,8 @@ node scripts/frame-shot.mjs ~/Downloads/notes.png work-notes
 ## Redirects and 404s
 
 - `http://` and `www.` go to `https://falcodash.com` with a 301.
-- Unknown paths return a real 404 page (`src/pages/404.astro`). Nothing is forwarded to app.falcodash.com automatically; product subdomains are only reached through links on the pages.
+- Unknown paths return a real 404 page (`src/pages/404.astro`).
+- The old dashboard's known routes (`/login`, `/dashboard`, `/signup`, `/financials/...`, invitation and password-reset links, and so on) 301 to the same path on app.falcodash.com, so old bookmarks keep working. The list is `APP_ROUTES` in `src/pages/[...path].ts`; nothing outside it is forwarded.
 - `/free-audit` is the audit landing page; every primary "free audit" CTA links there. `/audit` 301s to it, and `/pricing` sends a temporary 302 to `/contact` until a real page exists (`src/pages/[...path].ts`).
 
 ## Case studies
