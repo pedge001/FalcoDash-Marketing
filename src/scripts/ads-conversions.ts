@@ -9,7 +9,7 @@ export function fireAdsEvent(eventName: AdsConversionEvent, params: Record<strin
     const label = GOOGLE_ADS.labels[eventName] || '';
     const ready = isConfiguredTagId(GOOGLE_ADS.conversionId) && !!label && !/_LABEL$/.test(label);
     if (typeof w.gtag === 'function') {
-      if (ready) w.gtag('event', 'conversion', { send_to });
+      if (ready) w.gtag('event', 'conversion', { send_to, transport_type: 'beacon' });
       w.gtag('event', eventName, params);
     }
     if (Array.isArray(w.dataLayer)) {

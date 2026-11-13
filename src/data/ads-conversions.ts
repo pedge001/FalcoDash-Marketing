@@ -1,20 +1,21 @@
 // Single config spot for Google tag IDs and conversion labels.
-// Source: "Tracking plan" tab of the FalcoDash Google Ads Search review sheet
-// https://docs.google.com/spreadsheets/d/10q10khNbbuyluzEoX0Yl-jFSaSXWhoWWCfhmnWB-94U
-// read 2026-11-09 PT. The sheet has placeholders only — no real Ads conversion
-// ID, no real conversion labels, and no GA4 measurement ID. Do not invent IDs.
+// Conversion actions created in Google Ads (Penny Empire, customer 131113613) on
+// 2026-11-12 PT under Google tag AW-944429747. These are public IDs, so they live
+// here as defaults; PUBLIC_GOOGLE_ADS_ID still overrides the account ID.
 export const GOOGLE_ADS = {
   // Env wins over the file. Placeholders or empty values make the tag a no-op.
-  conversionId: (import.meta.env.PUBLIC_GOOGLE_ADS_ID || 'AW-XXXXXXXXX').trim(),
+  conversionId: (import.meta.env.PUBLIC_GOOGLE_ADS_ID || 'AW-944429747').trim(),
   // Empty: no G- measurement ID was on the sheet.
   ga4Id: (import.meta.env.PUBLIC_GA4_ID || '').trim(),
   labels: {
-    // Secondary. Sheet placeholder send_to: AW-XXXXXXXXX/AR_CALCULATOR_COMPLETE_LABEL
-    ar_calculator_completed: 'AR_CALCULATOR_COMPLETE_LABEL',
-    // Primary. Sheet placeholder send_to: AW-XXXXXXXXX/CALL_BOOKED_LABEL
-    call_booked: 'CALL_BOOKED_LABEL',
-    // tel: clicks. Sheet placeholder send_to: AW-XXXXXXXXX/WEBSITE_CALL_CLICK_LABEL
-    tel_click: 'WEBSITE_CALL_CLICK_LABEL',
+    // Secondary. FalcoDash - AR calculator completed (calculator email submitted successfully).
+    ar_calculator_completed: 'ew_wCMflq7cdELO1q8ID',
+    // Primary. FalcoDash - Call booked (booking confirmed: ?booked=1, #booked, or a Calendly/booking postMessage).
+    call_booked: 'WPLqCMTlq7cdELO1q8ID',
+    // FalcoDash - Phone number click (tel: links).
+    tel_click: 'u5lJCMrlq7cdELO1q8ID',
+    // FalcoDash - Free audit form submit (successful /free-audit form submit).
+    free_audit_submitted: 'ufuNCMHlq7cdELO1q8ID',
   },
 };
 
