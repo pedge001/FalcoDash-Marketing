@@ -21,6 +21,11 @@ export function fireAdsEvent(eventName: AdsConversionEvent, params: Record<strin
   }
 }
 
+const CALENDLY_ORIGIN = /^https:\/\/([a-z0-9-]+\.)*calendly\.com$/;
+export function isCalendlyOrigin(origin: string): boolean {
+  return CALENDLY_ORIGIN.test(origin || '');
+}
+
 export function initAdsConversions() {
   const w = window as any;
   if (w.__fdAdsReady) return;
@@ -43,11 +48,15 @@ export function initAdsConversions() {
     }
   } catch {}
 
+  // Calendly's inline widget posts { event: 'calendly.event_scheduled' } from its calendly.com
+  // iframe. Only trust that origin; a same-page booking_confirmed must come from this origin.
   addEventListener('message', (e) => {
     const data = e.data;
     const name = data && typeof data === 'object' ? (data.event || data.type || '') : '';
-    if (name === 'calendly.event_scheduled' || name === 'booking_confirmed') {
-      fireAdsEvent('call_booked', { source: String(name) });
+    if (name === 'calendly.event_scheduled' && isCalendlyOrigin(e.origin)) {
+      fireAdsEvent('call_booked', { source: 'calendly' });
+    } else if (name === 'booking_confirmed' && e.origin === location.origin) {
+      fireAdsEvent('call_booked', { source: 'booking_confirmed' });
     }
   });
 }
