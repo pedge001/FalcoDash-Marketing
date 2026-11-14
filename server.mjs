@@ -21,15 +21,20 @@ const ANALYTICS_CONNECT = 'https://*.google-analytics.com https://*.analytics.go
 const ADS_SCRIPTS = 'https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com';
 const ADS_CONNECT = 'https://www.googleadservices.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.google.com https://google.com https://pagead2.googlesyndication.com';
 const ADS_FRAMES = 'https://td.doubleclick.net https://www.googletagmanager.com';
+// Calendly inline booking widget on /cash-flow-fix: widget.js + widget.css from assets.calendly.com,
+// the booking iframe from calendly.com (it posts calendly.event_scheduled back to the page).
+const CALENDLY_SCRIPTS = 'https://assets.calendly.com';
+const CALENDLY_STYLES = 'https://assets.calendly.com';
+const CALENDLY_FRAMES = 'https://calendly.com';
 
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://unpkg.com ${ANALYTICS_SCRIPTS} ${ADS_SCRIPTS}`,
-  "style-src 'self' 'unsafe-inline' https://unpkg.com",
+  `script-src 'self' 'unsafe-inline' https://unpkg.com ${ANALYTICS_SCRIPTS} ${ADS_SCRIPTS} ${CALENDLY_SCRIPTS}`,
+  `style-src 'self' 'unsafe-inline' https://unpkg.com ${CALENDLY_STYLES}`,
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   `connect-src 'self' https://api.github.com https://unpkg.com ${ANALYTICS_CONNECT} ${ADS_CONNECT}`,
-  `frame-src 'self' ${ADS_FRAMES}`,
+  `frame-src 'self' ${ADS_FRAMES} ${CALENDLY_FRAMES}`,
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self' https://github.com",

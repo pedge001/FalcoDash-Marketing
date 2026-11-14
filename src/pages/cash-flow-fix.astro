@@ -11,6 +11,7 @@ import Base from '~/layouts/Base.astro';
 import { SITE } from '~/data/site';
 import { OFFER, PROOF, HEADLINES, AR_FORMULA } from '~/data/cashflow';
 import { abs, ORG_ID } from '~/lib/schema';
+import CalendlyInline from '~/components/CalendlyInline.astro';
 
 const path = OFFER.path;
 const title = '90 Day Cash Flow Fix | Faster Cash for SoCal Businesses | FalcoDash';
@@ -19,8 +20,11 @@ const description =
 const crumbs = [{ name: 'Home', path: '/' }, { name: OFFER.name, path }];
 const subhead = "We fix how you invoice and collect, so the money you've already earned reaches the bank. Reduce your AR or your money back.";
 
-// Booking link for the step after the intake form. Set PUBLIC_BOOKING_URL to show a real button.
+// Booking link for the step after the intake form. Set PUBLIC_BOOKING_URL to show the booking step.
+// A calendly.com link renders Calendly's inline widget (so the calendly.event_scheduled postMessage
+// reaches ads-conversions.ts and fires call_booked); any other link renders a plain button.
 const bookingUrl = (import.meta.env.PUBLIC_BOOKING_URL || '').trim();
+const isCalendly = /^https:\/\/(www\.)?calendly\.com\//i.test(bookingUrl);
 
 const INCLUDED = [
   'Week-1 accounts to call first',
@@ -158,7 +162,9 @@ const schema = [
               <p class="num">Step 2 of 2</p>
               <h3>Thanks. Now pick a time for your 20-minute call.</h3>
               <p class="body">Your results are on their way to your inbox.</p>
-              {bookingUrl ? (
+              {bookingUrl && isCalendly ? (
+                <CalendlyInline url={bookingUrl} prefillFrom="form[data-ar-results-form]" label="Pick a time for your 20-minute call" />
+              ) : bookingUrl ? (
                 <a href={bookingUrl} class="btn btn-primary" rel="noopener" target="_blank" data-booking><span>Pick a time</span><span aria-hidden="true">↗</span></a>
               ) : (
                 <p class="need">[need: booking link]</p>
@@ -381,5 +387,9 @@ const schema = [
   }
   @media (max-width: 560px) {
     .intake-form { grid-template-columns: 1fr; }
+    /* Give the Calendly embed its 320px minimum on phones; the text keeps the box padding. */
+    .out-foot:has(.booking:not([hidden])) { padding-left: 6px; padding-right: 6px; }
+    .booking { padding-left: 20px; padding-right: 20px; }
+    .booking :global(.cal-embed) { margin-left: -18px; margin-right: -18px; }
   }
 </style>
